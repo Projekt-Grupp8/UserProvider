@@ -1,5 +1,5 @@
 ﻿namespace Infrastructure.Repository;
 
-public class GenericRepo
+public class BaseRepository
 {
 }
