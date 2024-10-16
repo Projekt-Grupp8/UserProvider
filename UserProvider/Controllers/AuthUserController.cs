@@ -1,39 +1,39 @@
 ﻿using Infrastructure.Data;
+using Infrastructure.Entities;
+using Infrastructure.Factories;
+using Infrastructure.Models;
+using Infrastructure.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
-using UserProvider.Helpers;
-using UserProvider.Models;
 
 namespace UserProvider.Controllers;
 
-public class AuthUserController(DataContext context) : Controller
+public class AuthUserController(DataContext context, UserManager<ApplicationUser> userManager, UserService userService) : Controller
 {
     private readonly DataContext _context = context;
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
+    private readonly UserService _userService = userService;
 
-    public async Task<IActionResult> Register(User user)
+    [HttpPost]
+    public async Task<IActionResult> Register(SignUpUser model)
     {
-        if(!Validation.ValidateEmail(user.Email))
-        {
-            return Conflict();
-        }
 
         if (!ModelState.IsValid)
         {
-            return Conflict();
+            return BadRequest(ModelState);
         }
-
 
         try
         {
-            if (!await _context.Users.AnyAsync(x => x.Email == user.Email))
-            {
-                // Factory call (omvandlar model => entitet)
-                // Kalla på repo och skicka in entiteten för att skapas.
+            var result = await _userService.CreateUserAsync(model);
 
-                return Created("", user);
+            if (result.StatusCode is Infrastructure.Models.StatusCode.OK)
+            {
+                return Created("Registration succeeded", result.ContentResult);
             }
-            return View();
+
+            return Conflict(result.Message);
         }
         catch (Exception ex)
         {
