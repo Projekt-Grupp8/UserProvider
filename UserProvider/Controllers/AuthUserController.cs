@@ -10,12 +10,13 @@ namespace UserProvider.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthUserController(DataContext context, UserManager<ApplicationUser> userManager, UserService userService, ILogger<AuthUserController> logger) : Controller
+public class AuthUserController(DataContext context, UserManager<ApplicationUser> userManager, UserService userService, ILogger<AuthUserController> logger, SignInManager<ApplicationUser> signInManager) : Controller
 {
     private readonly ILogger<AuthUserController> _logger = logger;
     private readonly DataContext _context = context;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly UserService _userService = userService;
+    private readonly SignInManager<ApplicationUser> _signInManager = signInManager; 
 
     [HttpPost("register")]
     public async Task<IActionResult> Register(SignUpUser model)
@@ -69,6 +70,24 @@ public class AuthUserController(DataContext context, UserManager<ApplicationUser
         {
             _logger.LogError(ex, "<SignInUser> :: Sign in failed due to an internal error: {StatusCode}", StatusCodes.Status500InternalServerError);
             return BadRequest("An unexpected internal error occurred. Please try again later.");
+        }
+    }
+
+    [HttpPost]
+    [Route("logout")]
+    public async Task<IActionResult> LogOut()
+    {
+        try
+        {
+            Response.Cookies.Delete("AccessToken");
+            await _signInManager.SignOutAsync();
+
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "<LogOut> :: Sign out failed due to an internal error: {StatusCode}", StatusCodes.Status500InternalServerError);
+            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
         }
     }
 }
