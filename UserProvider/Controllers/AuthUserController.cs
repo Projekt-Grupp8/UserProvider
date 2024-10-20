@@ -1,7 +1,7 @@
 ﻿using Infrastructure.Data;
 using Infrastructure.Entities;
-using Infrastructure.Factories;
 using Infrastructure.Models;
+using ResponseStatusCode = Infrastructure.Models.StatusCode;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -9,8 +9,9 @@ using System.Diagnostics;
 
 namespace UserProvider.Controllers;
 
-public class AuthUserController(DataContext context, UserManager<ApplicationUser> userManager, UserService userService) : Controller
+public class AuthUserController(DataContext context, UserManager<ApplicationUser> userManager, UserService userService, ILogger<AuthUserController> logger) : Controller
 {
+    private readonly ILogger<AuthUserController> _logger = logger;
     private readonly DataContext _context = context;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly UserService _userService = userService;
@@ -28,17 +29,18 @@ public class AuthUserController(DataContext context, UserManager<ApplicationUser
         {
             var result = await _userService.CreateUserAsync(model);
 
-            if (result.StatusCode is Infrastructure.Models.StatusCode.OK)
+            return result.StatusCode switch
             {
-                return Created("Registration succeeded", result.ContentResult);
-            }
-
-            return Conflict(result.Message);
+                ResponseStatusCode.OK => Created("Registration succeeded", result.ContentResult),
+                ResponseStatusCode.EXISTS => Conflict("The user already exists"),
+                ResponseStatusCode.ERROR => BadRequest("Please provide all required information"),
+                _ => StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.")
+            };
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"ERROR:: Registration failed: {ex.Message}");
-            return BadRequest();
+            _logger.LogError(ex, "<Controller 'Register' Called> :: Registration failed due to an internal error: {StatusCode}", StatusCodes.Status500InternalServerError);
+            return BadRequest("An unexpected internal error occurred. Please try again later.");
         }
     }
 }
