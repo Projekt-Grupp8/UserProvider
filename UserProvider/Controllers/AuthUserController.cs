@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace UserProvider.Controllers;
 
+[ApiController]
+[Route("api/[controller]")]
 public class AuthUserController(DataContext context, UserManager<ApplicationUser> userManager, UserService userService, ILogger<AuthUserController> logger) : Controller
 {
     private readonly ILogger<AuthUserController> _logger = logger;
@@ -15,7 +17,7 @@ public class AuthUserController(DataContext context, UserManager<ApplicationUser
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly UserService _userService = userService;
 
-    [HttpPost]
+    [HttpPost("register")]
     public async Task<IActionResult> Register(SignUpUser model)
     {
 
@@ -38,11 +40,12 @@ public class AuthUserController(DataContext context, UserManager<ApplicationUser
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "<Controller 'Register' Called> :: Registration failed due to an internal error: {StatusCode}", StatusCodes.Status500InternalServerError);
+            _logger.LogError(ex, "<Register> :: Registration failed due to an internal error: {StatusCode}", StatusCodes.Status500InternalServerError);
             return BadRequest("An unexpected internal error occurred. Please try again later.");
         }
     }
 
+    [HttpPost("signin")]
     public async Task<IActionResult> SignInUser(SignInUser model)
     {
         if (!ModelState.IsValid)
@@ -64,7 +67,7 @@ public class AuthUserController(DataContext context, UserManager<ApplicationUser
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "<Controller 'SignInUser' Called> :: Sign in failed due to an internal error: {StatusCode}", StatusCodes.Status500InternalServerError);
+            _logger.LogError(ex, "<SignInUser> :: Sign in failed due to an internal error: {StatusCode}", StatusCodes.Status500InternalServerError);
             return BadRequest("An unexpected internal error occurred. Please try again later.");
         }
     }

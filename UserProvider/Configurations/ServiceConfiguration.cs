@@ -14,6 +14,7 @@ public static class ServiceConfiguration
         services.AddControllers();
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
+        services.AddLogging();
 
         var connectionString = configuration.GetConnectionString("AzureSqlServer")
             ?? throw new ArgumentNullException(nameof(configuration), "Connection string for 'SqlServer' not found.");
@@ -31,5 +32,6 @@ public static class ServiceConfiguration
 
 
         services.AddScoped<UserService>();
+        services.AddSingleton<EmailService>();
     }
 }

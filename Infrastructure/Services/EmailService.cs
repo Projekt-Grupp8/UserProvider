@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Infrastructure.Services;
 
-public class EmailService(Logger<EmailService> logger, IConfiguration configuration)
+public class EmailService(ILogger<EmailService> logger, IConfiguration configuration)
 {
     private readonly ILogger<EmailService> _logger = logger;
     private readonly IConfiguration _configuration = configuration;
