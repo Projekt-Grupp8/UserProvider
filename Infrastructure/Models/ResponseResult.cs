@@ -6,7 +6,7 @@ public enum StatusCode
     ERROR = 400,
     NOT_FOUND = 404,
     EXISTS = 409,
-    DBERROR = 500,
+    INTERNAL = 500,
 }
 
 public class ResponseResult

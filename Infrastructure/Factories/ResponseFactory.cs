@@ -72,7 +72,7 @@ public class ResponseFactory
         return new ResponseResult
         {
             Message = message ?? "Woops, something went wrong.",
-            StatusCode = StatusCode.DBERROR
+            StatusCode = StatusCode.INTERNAL
         };
     }
 }

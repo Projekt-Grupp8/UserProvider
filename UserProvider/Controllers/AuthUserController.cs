@@ -5,7 +5,6 @@ using ResponseStatusCode = Infrastructure.Models.StatusCode;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
 
 namespace UserProvider.Controllers;
 
@@ -32,7 +31,7 @@ public class AuthUserController(DataContext context, UserManager<ApplicationUser
             return result.StatusCode switch
             {
                 ResponseStatusCode.OK => Created("Registration succeeded", result.ContentResult),
-                ResponseStatusCode.EXISTS => Conflict("The user already exists"),
+                ResponseStatusCode.EXISTS => Conflict("The user with this e-mail address already exists"),
                 ResponseStatusCode.ERROR => BadRequest("Please provide all required information"),
                 _ => StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.")
             };
