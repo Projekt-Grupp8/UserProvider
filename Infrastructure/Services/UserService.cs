@@ -9,12 +9,13 @@ using System.Diagnostics;
 
 namespace Infrastructure.Services;
 
-public class UserService(UserManager<ApplicationUser> userManager, DataContext context, ILogger<UserService> logger, SignInManager<ApplicationUser> signInManager)
+public class UserService(UserManager<ApplicationUser> userManager, DataContext context, ILogger<UserService> logger, SignInManager<ApplicationUser> signInManager, EmailService emailService)
 {
     private readonly ILogger<UserService> _logger = logger;
     private readonly DataContext _context = context;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
+    private readonly EmailService _emailService = emailService;
 
     public async Task<ResponseResult> CreateUserAsync(SignUpUser model)
     {
@@ -27,9 +28,17 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
 
             var user = UserFactory.Create(model);
             var result = await _userManager.CreateAsync(user, model.Password);
+
             if (!result.Succeeded)
             {
                 return ResponseFactory.InternalError();
+            }
+
+            // Den här ska flyttas till CommunicationProvider, istället ska det bara göras ett httpcall härifrån senare.
+            var emailSent = await _emailService.SendConfirmedRegistrationAsync(model);
+            if (!emailSent)
+            {
+                _logger.LogWarning("<CreateUserAsync> E-mail confirmation failed.");
             }
 
             return ResponseFactory.Ok(user);
