@@ -42,4 +42,30 @@ public class AuthUserController(DataContext context, UserManager<ApplicationUser
             return BadRequest("An unexpected internal error occurred. Please try again later.");
         }
     }
+
+    public async Task<IActionResult> SignInUser(SignInUser model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            var result = await _userService.SignInUserAsync(model);
+
+            return result.StatusCode switch
+            {
+                ResponseStatusCode.OK => Created("Sign in succeeded", result.ContentResult),
+                ResponseStatusCode.EXISTS => Conflict("No user found with this e-mail address"),
+                ResponseStatusCode.INVALID_CREDENTIALS => BadRequest("Invalid credentials. Please check your input."),
+                _ => StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.")
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "<Controller 'SignInUser' Called> :: Sign in failed due to an internal error: {StatusCode}", StatusCodes.Status500InternalServerError);
+            return BadRequest("An unexpected internal error occurred. Please try again later.");
+        }
+    }
 }
