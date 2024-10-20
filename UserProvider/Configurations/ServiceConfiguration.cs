@@ -15,7 +15,10 @@ public static class ServiceConfiguration
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
 
-        services.AddDbContext<DataContext>(x => x.UseSqlServer(configuration.GetConnectionString("SqlServer")));
+        var connectionString = configuration.GetConnectionString("AzureSqlServer")
+            ?? throw new ArgumentNullException(nameof(configuration), "Connection string for 'SqlServer' not found.");
+
+        services.AddDbContext<DataContext>(x => x.UseSqlServer(connectionString));
         services.AddDefaultIdentity<ApplicationUser>(x =>
         {
             x.User.RequireUniqueEmail = true;
@@ -28,6 +31,5 @@ public static class ServiceConfiguration
 
 
         services.AddScoped<UserService>();
-        services.AddScoped<UserManager<ApplicationUser>>();
     }
 }

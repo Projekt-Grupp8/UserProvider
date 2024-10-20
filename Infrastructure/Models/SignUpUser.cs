@@ -9,7 +9,7 @@ public class SignUpUser
     public string UserName { get; set; } = null!;
 
     [Required(ErrorMessage = "You must provide a password.")]
-    [StringLength(64, ErrorMessage = "The password must be between {2} and {1} characters long.", MinimumLength = 6)]
+    [StringLength(64, ErrorMessage = "The password must be between {2} and {1} characters long.", MinimumLength = 8)]
     public string Password { get; set; } = null!;
 
     [Compare("Password", ErrorMessage = "Password doesn't match.")]
