@@ -31,7 +31,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{ github.workspace }}/UserProvider/bin/Release/net8.0/publish
+          path: ${{ github.workspace }}
 
   deploy:
     runs-on: windows-latest
