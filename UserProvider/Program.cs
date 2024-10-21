@@ -8,17 +8,17 @@ builder.Logging.AddConsole();
 var app = builder.Build();
 
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
-app.UseAuthorization();
-app.UseAuthentication();
-app.MapControllers();
 app.UseCors(x => x.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod());
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
 
 
 app.Run();
