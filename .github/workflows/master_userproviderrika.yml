@@ -61,5 +61,5 @@ jobs:
         with:
           app-name: 'userproviderrika'
           slot-name: 'Production'
-          package: .
+          package: "${{env.GITHUB_WORKSPACE}}\\myapp"
           
