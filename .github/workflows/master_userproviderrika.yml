@@ -27,9 +27,6 @@ jobs:
       - name: dotnet publish
         run: dotnet publish ./UserProvider/UserProvider.csproj -c Release -o ${{ github.workspace }}/UserProvider
 
-      - name: List published files
-        run: ls -la ${{ github.workspace }}/UserProvider
-
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
