@@ -25,13 +25,16 @@ jobs:
         run: dotnet build ./UserProvider/UserProvider.csproj --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish ./UserProvider/UserProvider.csproj -c Release
+        run: dotnet publish ./UserProvider/UserProvider.csproj -c Release -o ${{ github.workspace }}/UserProvider
+
+      - name: List published files
+        run: ls -la ${{ github.workspace }}/UserProvider
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{ github.workspace }}/UserProvider
+          path: ${{ github.workspace }}/UserProvider/bin/Release/net8.0/publish
 
   deploy:
     runs-on: windows-latest
@@ -40,7 +43,7 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write #This is required for requesting the JWT
+      id-token: write # This is required for requesting the JWT
 
     steps:
       - name: Download artifact from build job
@@ -61,4 +64,4 @@ jobs:
         with:
           app-name: 'userproviderrika'
           slot-name: 'Production'
-          package: ${{ github.workspace }}/UserProvider
+          package: ${{ github.workspace }}/UserProvider/bin/Release/net8.0/publish
