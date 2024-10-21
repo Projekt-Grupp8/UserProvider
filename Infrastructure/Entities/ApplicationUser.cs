@@ -5,12 +5,10 @@ namespace Infrastructure.Entities;
 
 public class ApplicationUser  : IdentityUser
 {
-    [Required]
     [ProtectedPersonalData]
-    public string FirstName { get; set; } = null!;
-    [Required]
+    public string? FirstName { get; set; }
     [ProtectedPersonalData]
-    public string LastName { get; set;} = null!;
+    public string? LastName { get; set;}
     [ProtectedPersonalData]
     public GenderType? Gender { get; set; }
     public string? ProfileImageUrl { get; set; }

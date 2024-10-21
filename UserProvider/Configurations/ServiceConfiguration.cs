@@ -33,6 +33,16 @@ public static class ServiceConfiguration
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<DataContext>();
 
+        services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(
+                policy =>
+                {
+                    policy.AllowAnyOrigin()
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+        });
 
         services.AddScoped<UserService>();
         services.AddScoped<JwtService>();
