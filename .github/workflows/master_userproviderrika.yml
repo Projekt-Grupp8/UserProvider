@@ -31,7 +31,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{ github.workspace }}/UserProvider/UserProvider/bin/Release/net8.0/publish
+          path: ${{ github.workspace }}/UserProvider
 
   deploy:
     runs-on: windows-latest
@@ -61,4 +61,4 @@ jobs:
         with:
           app-name: 'userproviderrika'
           slot-name: 'Production'
-          package: ${{ github.workspace }}/UserProvider/UserProvider/bin/Release/net8.0/publish
+          package: ${{ github.workspace }}/UserProvider/bin/Release/net8.0/publish
