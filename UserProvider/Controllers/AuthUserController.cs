@@ -5,18 +5,19 @@ using ResponseStatusCode = Infrastructure.Models.StatusCode;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace UserProvider.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthUserController(DataContext context, UserManager<ApplicationUser> userManager, UserService userService, ILogger<AuthUserController> logger, SignInManager<ApplicationUser> signInManager) : Controller
+public class AuthUserController(UserManager<ApplicationUser> userManager, UserService userService, ILogger<AuthUserController> logger, SignInManager<ApplicationUser> signInManager, JwtService jwtService) : Controller
 {
     private readonly ILogger<AuthUserController> _logger = logger;
-    private readonly DataContext _context = context;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly UserService _userService = userService;
-    private readonly SignInManager<ApplicationUser> _signInManager = signInManager; 
+    private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
+    private readonly JwtService _jwtService = jwtService;
 
     [HttpPost("register")]
     public async Task<IActionResult> Register(SignUpUser model)
@@ -36,7 +37,7 @@ public class AuthUserController(DataContext context, UserManager<ApplicationUser
                 ResponseStatusCode.OK => Created("Registration succeeded", result.ContentResult),
                 ResponseStatusCode.EXISTS => Conflict("The user with this e-mail address already exists"),
                 ResponseStatusCode.ERROR => BadRequest("Please provide all required information"),
-                _ => StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.")
+                _ => StatusCode(StatusCodes.Status500InternalServerError, "An unexpected internal error occurred. Please try again later.")
             };
         }
         catch (Exception ex)
@@ -46,6 +47,7 @@ public class AuthUserController(DataContext context, UserManager<ApplicationUser
         }
     }
 
+    [Authorize]
     [HttpPost("signin")]
     public async Task<IActionResult> SignInUser(SignInUser model)
     {
@@ -63,7 +65,7 @@ public class AuthUserController(DataContext context, UserManager<ApplicationUser
                 ResponseStatusCode.OK => Created("Sign in succeeded", result.ContentResult),
                 ResponseStatusCode.EXISTS => Conflict("No user found with this e-mail address"),
                 ResponseStatusCode.INVALID_CREDENTIALS => BadRequest("Invalid credentials. Please check your input."),
-                _ => StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.")
+                _ => StatusCode(StatusCodes.Status500InternalServerError, "An unexpected internal error occurred. Please try again later.")
             };
         }
         catch (Exception ex)
@@ -73,6 +75,7 @@ public class AuthUserController(DataContext context, UserManager<ApplicationUser
         }
     }
 
+    [Authorize]
     [HttpPost]
     [Route("logout")]
     public async Task<IActionResult> LogOut()
@@ -89,5 +92,17 @@ public class AuthUserController(DataContext context, UserManager<ApplicationUser
             _logger.LogError(ex, "<LogOut> :: Sign out failed due to an internal error: {StatusCode}", StatusCodes.Status500InternalServerError);
             return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
         }
+    }
+
+    [HttpPost]
+    [Route("token")]
+    public IActionResult GetToken(SignInUser model)
+    {
+        if (ModelState.IsValid)
+        {
+            var tokenString = _jwtService.GetToken(model.Email);
+            return Ok(tokenString);
+        }
+        return Unauthorized();
     }
 }

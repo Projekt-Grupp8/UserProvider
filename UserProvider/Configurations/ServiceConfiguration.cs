@@ -15,6 +15,8 @@ public static class ServiceConfiguration
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
         services.AddLogging();
+        services.AddAuthorization();
+        services.RegisterJwt(configuration);
 
         var connectionString = configuration.GetConnectionString("AzureSqlServer")
             ?? throw new ArgumentNullException(nameof(configuration), "Connection string for 'SqlServer' not found.");
@@ -32,6 +34,7 @@ public static class ServiceConfiguration
 
 
         services.AddScoped<UserService>();
+        services.AddScoped<JwtService>();
         services.AddSingleton<EmailService>();
     }
 }

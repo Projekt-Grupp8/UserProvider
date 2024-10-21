@@ -12,11 +12,21 @@ public class ApplicationUser  : IdentityUser
     [ProtectedPersonalData]
     public string LastName { get; set;} = null!;
     [ProtectedPersonalData]
-    public string Gender { get; set; } = null!;
-    public string Age { get; set; } = null!;
-    public string ProfileImageUrl { get; set; } = null!;
-    public DateTime? Created {  get; set; }
-    public DateTime? Updated { get; set;}
+    public GenderType? Gender { get; set; }
+    public string? ProfileImageUrl { get; set; }
     public bool IsExternalAccount { get; set; } = false;
     public bool IsDarkMode { get; set; } = false;
+    public bool IsVerified { get; set; } = false;
+    public DateTime? BirthDate { get; set; }
+    public DateTime Created {  get; set; }
+    public DateTime Updated { get; set; }
+    public DateTime LastLoginDate {  get; set; }
+}
+
+public enum GenderType
+{
+    Male,
+    Female,
+    Other,
+    PreferNotToSay
 }
