@@ -22,16 +22,16 @@ jobs:
           dotnet-version: '8.x'
 
       - name: Build with dotnet
-        run: dotnet build --configuration Release
+        run: dotnet build ./UserProvider/UserProvider.csproj --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.GITHUB_WORKSPACE}}\myapp"
+        run: dotnet publish ./UserProvider/UserProvider.csproj -c Release -o ${{env.GITHUB_WORKSPACE}}/myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{env.GITHUB_WORKSPACE}}\myapp
+          path: ${{env.GITHUB_WORKSPACE}}/myapp
 
   deploy:
     runs-on: windows-latest
@@ -47,7 +47,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
-      
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -61,5 +61,4 @@ jobs:
         with:
           app-name: 'userproviderrika'
           slot-name: 'Production'
-          package: .
-          
+          package: ${{env.GITHUB_WORKSPACE}}/myapp

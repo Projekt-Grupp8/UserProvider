@@ -35,11 +35,11 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
             }
 
             // Den här ska flyttas till CommunicationProvider, istället ska det bara göras ett httpcall härifrån senare.
-            var emailSent = await _emailService.SendConfirmedRegistrationAsync(model);
-            if (!emailSent)
-            {
-                _logger.LogWarning("<CreateUserAsync> E-mail confirmation failed.");
-            }
+            //var emailSent = await _emailService.SendConfirmedRegistrationAsync(model);
+            //if (!emailSent)
+            //{
+            //    _logger.LogWarning("<CreateUserAsync> E-mail confirmation failed.");
+            //}
 
             return ResponseFactory.Ok(user);
         }
