@@ -25,13 +25,13 @@ jobs:
         run: dotnet build ./UserProvider/UserProvider.csproj --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish ./UserProvider/UserProvider.csproj -c Release -o ${{env.GITHUB_WORKSPACE}}\myapp
+        run: dotnet publish ./UserProvider/UserProvider.csproj -c Release -o ${{GITHUB.WORKSPACE}}\myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{env.GITHUB_WORKSPACE}}/myapp
+          path: ${{GITHUB.WORKSPACE}}/myapp
 
   deploy:
     runs-on: windows-latest
@@ -61,4 +61,4 @@ jobs:
         with:
           app-name: 'userproviderrika'
           slot-name: 'Production'
-          package: ${{env.GITHUB_WORKSPACE}}\myapp
+          package: ${{GITHUB.WORKSPACE}}\myapp
