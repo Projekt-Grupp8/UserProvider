@@ -1,5 +1,4 @@
-﻿using Infrastructure.Data;
-using Infrastructure.Entities;
+﻿using Infrastructure.Entities;
 using Infrastructure.Models;
 using ResponseStatusCode = Infrastructure.Models.StatusCode;
 using Infrastructure.Services;
@@ -10,7 +9,6 @@ using Microsoft.AspNetCore.Authorization;
 namespace UserProvider.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
 public class AuthUserController(UserManager<ApplicationUser> userManager, UserService userService, ILogger<AuthUserController> logger, SignInManager<ApplicationUser> signInManager, JwtService jwtService) : Controller
 {
     private readonly ILogger<AuthUserController> _logger = logger;
@@ -19,7 +17,7 @@ public class AuthUserController(UserManager<ApplicationUser> userManager, UserSe
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
     private readonly JwtService _jwtService = jwtService;
 
-    [HttpPost("register")]
+    [HttpPost("/register")]
     public async Task<IActionResult> Register(SignUpUser model)
     {
 
@@ -47,7 +45,7 @@ public class AuthUserController(UserManager<ApplicationUser> userManager, UserSe
         }
     }
 
-    [HttpPost("signin")]
+    [HttpPost("/signin")]
     public async Task<IActionResult> SignInUser(SignInUser model)
     {
         if (!ModelState.IsValid)
@@ -75,7 +73,7 @@ public class AuthUserController(UserManager<ApplicationUser> userManager, UserSe
 
     [Authorize]
     [HttpPost]
-    [Route("logout")]
+    [Route("/logout")]
     public async Task<IActionResult> LogOut()
     {
         try
@@ -93,7 +91,7 @@ public class AuthUserController(UserManager<ApplicationUser> userManager, UserSe
     }
 
     [HttpPost]
-    [Route("token")]
+    [Route("/token")]
     public IActionResult GetToken(SignInUser model)
     {
         if (ModelState.IsValid)

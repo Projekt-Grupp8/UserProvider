@@ -5,7 +5,6 @@ using Infrastructure.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Diagnostics;
 
 namespace Infrastructure.Services;
 
@@ -60,7 +59,6 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
                 return ResponseFactory.NotFound();
             }
 
-            var normalizedEmail = user.Email.ToUpper();
             var result = await _signInManager.PasswordSignInAsync(user.Email, user.Password, user.RememberMe, false);
 
             if (!result.Succeeded)
