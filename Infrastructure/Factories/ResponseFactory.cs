@@ -30,6 +30,15 @@ public class ResponseFactory
         };
     }
 
+    public static ResponseResult Ok(object obj1, object obj2)
+    {
+        return new ResponseResult
+        {
+            ContentResult = new { obj1, obj2 },
+            StatusCode = StatusCode.OK,
+        };
+    }
+
     public static ResponseResult Ok(object obj, string? message = "")
     {
         return new ResponseResult

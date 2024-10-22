@@ -28,7 +28,7 @@ public static class ServiceConfiguration
             x.User.RequireUniqueEmail = true;
             x.SignIn.RequireConfirmedAccount = false;
             x.Password.RequiredLength = 8;
-            x.Lockout.MaxFailedAccessAttempts = 3;
+            //x.Lockout.MaxFailedAccessAttempts = 3;
         })
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<DataContext>();

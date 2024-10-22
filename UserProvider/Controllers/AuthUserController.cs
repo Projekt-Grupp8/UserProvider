@@ -47,7 +47,6 @@ public class AuthUserController(UserManager<ApplicationUser> userManager, UserSe
         }
     }
 
-    [Authorize]
     [HttpPost("signin")]
     public async Task<IActionResult> SignInUser(SignInUser model)
     {
@@ -59,10 +58,9 @@ public class AuthUserController(UserManager<ApplicationUser> userManager, UserSe
         try
         {
             var result = await _userService.SignInUserAsync(model);
-
             return result.StatusCode switch
             {
-                ResponseStatusCode.OK => Created("Sign in succeeded", result.ContentResult),
+                ResponseStatusCode.OK => Ok(result),
                 ResponseStatusCode.EXISTS => Conflict("No user found with this e-mail address"),
                 ResponseStatusCode.INVALID_CREDENTIALS => BadRequest("Invalid credentials. Please check your input."),
                 _ => StatusCode(StatusCodes.Status500InternalServerError, "An unexpected internal error occurred. Please try again later.")

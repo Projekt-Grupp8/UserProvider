@@ -9,13 +9,14 @@ using System.Diagnostics;
 
 namespace Infrastructure.Services;
 
-public class UserService(UserManager<ApplicationUser> userManager, DataContext context, ILogger<UserService> logger, SignInManager<ApplicationUser> signInManager, EmailService emailService)
+public class UserService(UserManager<ApplicationUser> userManager, DataContext context, ILogger<UserService> logger, SignInManager<ApplicationUser> signInManager, EmailService emailService, JwtService jwtService)
 {
     private readonly ILogger<UserService> _logger = logger;
     private readonly DataContext _context = context;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
     private readonly EmailService _emailService = emailService;
+    private readonly JwtService _jwtService = jwtService;
 
     public async Task<ResponseResult> CreateUserAsync(SignUpUser model)
     {
@@ -59,20 +60,39 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
                 return ResponseFactory.NotFound();
             }
 
-            // Eventuellt lägga till en RememberMe på isPersistent? 
-            var result = await _signInManager.PasswordSignInAsync(user.Email, user.Password, isPersistent: false, lockoutOnFailure: false);
+            var normalizedEmail = user.Email.ToUpper();
+            var result = await _signInManager.PasswordSignInAsync(user.Email, user.Password, user.RememberMe, false);
 
             if (!result.Succeeded)
             {
+                _logger.LogWarning("Sign in failed for user {Email} {Password}: {Reason}", user.Email, user.Password, result.ToString());
                 return ResponseFactory.InvalidCredentials();
             }
 
-            return ResponseFactory.Ok(user);
+            var token = await GenerateTokenAsync(user.Email);
+            if (token is null)
+            {
+                return ResponseFactory.InternalError("Couldn't generate JWT token.");
+            }
+
+            return ResponseFactory.Ok( new { user.Email, Token = token }, "Succeeded");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "<SignInUserAsync> Sign in failed.");
             return ResponseFactory.InternalError();
         }
+    }
+
+    public async Task<string> GenerateTokenAsync(string email)
+    {
+        var existingUser = await _userManager.Users.SingleOrDefaultAsync(x => x.Email == email);
+        if (existingUser?.Email is not null)
+        {
+            var token = _jwtService.GetToken(existingUser.Email);
+            return token;
+        }
+
+        return null!;
     }
 }

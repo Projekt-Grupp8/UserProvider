@@ -13,7 +13,7 @@ public class UserFactory
         {
             return new ApplicationUser
             {
-                UserName = model.UserName,
+                UserName = model.Email,
                 Email = model.Email,
                 Created = DateTime.UtcNow,
                 Updated = DateTime.UtcNow,
