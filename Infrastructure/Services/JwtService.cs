@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -6,30 +7,46 @@ using System.Text;
 
 namespace Infrastructure.Services;
 
-public class JwtService(IConfiguration configuration)
+public class JwtService(IConfiguration configuration, ILogger<JwtService> logger)
 {
     private readonly IConfiguration _configuration = configuration;
+    private readonly ILogger<JwtService> _logger = logger;
 
-    public string GetToken(string email)
+    public string GetToken(string email, string? role = null)
     {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]!);
-
-        var tokenDescriptor = new SecurityTokenDescriptor
+        try
         {
-            Subject = new ClaimsIdentity(new Claim[]
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]!);
+
+            var claims = new List<Claim>
             {
-                        new(ClaimTypes.NameIdentifier, email),
-                        new(ClaimTypes.Email, email),
-            }),
-            Expires = DateTime.UtcNow.AddDays(1),
-            Issuer = _configuration["Jwt:Issuer"],
-            Audience = _configuration["Jwt:Audience"],
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-        };
+                new(ClaimTypes.NameIdentifier, email),
+                new(ClaimTypes.Email, email)
+            };
 
-        var token = tokenHandler.CreateToken(tokenDescriptor);
+            if (!string.IsNullOrEmpty(role))
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
-        return tokenHandler.WriteToken(token);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddDays(1),
+                Issuer = _configuration["Jwt:Issuer"],
+                Audience = _configuration["Jwt:Audience"],
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+
+            return tokenHandler.WriteToken(token);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Token generation failed.");
+            return null!;
+        }
     }
 }

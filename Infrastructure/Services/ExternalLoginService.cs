@@ -1,7 +1,5 @@
 ﻿using Infrastructure.Entities;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 

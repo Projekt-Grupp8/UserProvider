@@ -4,7 +4,7 @@ public enum StatusCode
 {
     OK = 200,
     ERROR = 400,
-    INVALID_CREDENTIALS = 401,
+    UNAUTHORIZED = 401,
     NOT_FOUND = 404,
     EXISTS = 409,
     INTERNAL = 500,

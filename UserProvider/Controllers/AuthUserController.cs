@@ -38,7 +38,7 @@ public class AuthUserController(UserManager<ApplicationUser> userManager, UserSe
                 ResponseStatusCode.ERROR => BadRequest("Please provide all required information"),
                 _ => StatusCode(StatusCodes.Status500InternalServerError, "An unexpected internal error occurred. Please try again later.")
             };
-        }
+        } 
         catch (Exception ex)
         {
             _logger.LogError(ex, "<Register> :: Registration failed due to an internal error: {StatusCode}", StatusCodes.Status500InternalServerError);
@@ -61,7 +61,7 @@ public class AuthUserController(UserManager<ApplicationUser> userManager, UserSe
             {
                 ResponseStatusCode.OK => Ok(result),
                 ResponseStatusCode.EXISTS => Conflict("No user found with this e-mail address"),
-                ResponseStatusCode.INVALID_CREDENTIALS => BadRequest("Invalid credentials. Please check your input."),
+                ResponseStatusCode.UNAUTHORIZED => BadRequest("Invalid credentials. Please check your input."),
                 _ => StatusCode(StatusCodes.Status500InternalServerError, "An unexpected internal error occurred. Please try again later.")
             };
         }

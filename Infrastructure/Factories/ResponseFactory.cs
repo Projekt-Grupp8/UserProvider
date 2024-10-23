@@ -58,12 +58,12 @@ public class ResponseFactory
         };
     }
 
-    public static ResponseResult InvalidCredentials(string? message = null)
+    public static ResponseResult Unauthorized(string? message = null)
     {
         return new ResponseResult
         {
             Message = message ?? "Invalid credentials.",
-            StatusCode = StatusCode.INVALID_CREDENTIALS,
+            StatusCode = StatusCode.UNAUTHORIZED,
         };
     }
 

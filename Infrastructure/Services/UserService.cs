@@ -64,7 +64,7 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
             if (!result.Succeeded)
             {
                 _logger.LogWarning("Sign in failed for user {Email} {Password}: {Reason}", user.Email, user.Password, result.ToString());
-                return ResponseFactory.InvalidCredentials();
+                return ResponseFactory.Error();
             }
 
             var token = await GenerateTokenAsync(user.Email);
