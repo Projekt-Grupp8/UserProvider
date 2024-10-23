@@ -2,35 +2,34 @@
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-namespace UserProvider.Configurations
+namespace UserProvider.Configurations;
+
+public static class JwtConfiguration
 {
-    public static class JwtConfiguration
+    public static void ValidateJWT(this IServiceCollection services, IConfiguration configuration)
     {
-        public static void RegisterJwt(this IServiceCollection services, IConfiguration configuration)
+        services.AddAuthentication(x =>
         {
-            services.AddAuthentication(x =>
+            x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+            .AddJwtBearer(x =>
             {
-                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-                .AddJwtBearer(x =>
+                x.TokenValidationParameters = new TokenValidationParameters
                 {
-                    x.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidIssuer = configuration["Jwt:Issuer"],
+                    ValidateIssuer = true,
+                    ValidIssuer = configuration["Jwt:Issuer"],
 
-                        ValidateAudience = true,
-                        ValidAudience = configuration["Jwt:Audience"],
+                    ValidateAudience = true,
+                    ValidAudience = configuration["Jwt:Audience"],
 
-                        ValidateLifetime = true,
+                    ValidateLifetime = true,
 
-                        ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:secret"]!)),
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:secret"]!)),
 
-                        ClockSkew = TimeSpan.Zero,
-                    };
-                });
-        }
+                    ClockSkew = TimeSpan.Zero,
+                };
+            });
     }
 }

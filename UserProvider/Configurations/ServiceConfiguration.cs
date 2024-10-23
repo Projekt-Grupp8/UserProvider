@@ -17,7 +17,7 @@ public static class ServiceConfiguration
         services.AddSwaggerGen();
         services.AddLogging();
         services.AddAuthorization();
-        services.RegisterJwt(configuration);
+        services.ValidateJWT(configuration);
 
         var connectionString = configuration.GetConnectionString("AzureSqlServer")
             ?? throw new ArgumentNullException(nameof(configuration), "Connection string for 'SqlServer' not found.");
@@ -28,7 +28,7 @@ public static class ServiceConfiguration
             x.User.RequireUniqueEmail = true;
             x.SignIn.RequireConfirmedAccount = false;
             x.Password.RequiredLength = 8;
-            //x.Lockout.MaxFailedAccessAttempts = 3;
+            x.Lockout.MaxFailedAccessAttempts = 3;
         })
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<DataContext>();
