@@ -5,6 +5,7 @@ using Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using UserProvider.Filters;
 
 namespace UserProvider.Controllers;
 
@@ -90,6 +91,7 @@ public class AuthUserController(UserManager<ApplicationUser> userManager, UserSe
         }
     }
 
+    [ApiKey]
     [HttpPost]
     [Route("/token")]
     public IActionResult GetToken(SignInUser model)
