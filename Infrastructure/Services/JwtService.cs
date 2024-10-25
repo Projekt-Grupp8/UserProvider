@@ -7,10 +7,22 @@ using System.Text;
 
 namespace Infrastructure.Services;
 
-public class JwtService(IConfiguration configuration, ILogger<JwtService> logger)
+public class JwtService
 {
-    private readonly IConfiguration _configuration = configuration;
-    private readonly ILogger<JwtService> _logger = logger;
+    public JwtService(IConfiguration configuration, ILogger<JwtService> logger)
+    {
+        _configuration = configuration;
+        _logger = logger;
+    }
+
+    public JwtService()
+    {
+        _configuration = null!;
+        _logger = null!;
+    }
+
+    private readonly IConfiguration _configuration;
+    private readonly ILogger<JwtService> _logger;
 
     public string GetToken(string email, string? role = null)
     {
