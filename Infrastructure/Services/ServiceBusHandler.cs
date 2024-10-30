@@ -12,7 +12,7 @@ public class ServiceBusHandler
 {
     private readonly IConfiguration _configuration;
     private readonly ILogger<ServiceBusHandler> _logger;
-    private readonly HttpClient _httpClient = new HttpClient();
+    private readonly HttpClient _httpClient;
     private readonly UserService _userService;
 
     public ServiceBusHandler(IConfiguration configuration, ILogger<ServiceBusHandler> logger, HttpClient httpClient, UserService userService)
@@ -52,7 +52,8 @@ public class ServiceBusHandler
     {
         try
         {
-            string providerUri = _configuration.GetConnectionString("VerificationProviderString") ?? throw new ArgumentNullException("providerUri is null");
+            string providerUri = _configuration.GetConnectionString("VerificationProviderString")
+                                ?? throw new ArgumentNullException(nameof(providerUri));
 
             var result = await _httpClient.PostAsJsonAsync(providerUri, new { Email = email, Code = code });
             if (!result.IsSuccessStatusCode)
@@ -61,11 +62,11 @@ public class ServiceBusHandler
             }
 
             await _userService.ChangeVerificationStatusAsync(email);
-            return result.IsSuccessStatusCode;
+            return true;
         }
         catch (Exception ex)
         {
-            _logger.LogError("SendServiceBusMessage() error : {Error}", ex.Message);
+            _logger.LogError("VerifyCodeAsync() error : {Error}", ex.Message);
             return false;
         }
     }
