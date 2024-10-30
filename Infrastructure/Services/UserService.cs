@@ -84,36 +84,59 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
 
     public async Task<string> GenerateTokenAsync(string email)
     {
-        var existingUser = await _userManager.Users.SingleOrDefaultAsync(x => x.Email == email);
-        if (existingUser?.Email is not null)
+        try
         {
-            var token = _jwtService.GetToken(existingUser.Email);
-            return token;
+            var existingUser = await _userManager.Users.SingleOrDefaultAsync(x => x.Email == email);
+            if (existingUser?.Email is not null)
+            {
+                var token = _jwtService.GetToken(existingUser.Email);
+                return token;
+            }
         }
-
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "<GenerateTokenAsync> Failed generating token.");
+            return string.Empty;
+        }
         return null!;
     }
 
     public async Task<ResponseResult> ChangeVerificationStatusAsync(string email)
     {
-        var user = await _userManager.FindByEmailAsync(email);
-        if (user == null)
+        try
         {
-            return ResponseFactory.NotFound("The user doesnt exist, please try again.");
-        }
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                return ResponseFactory.NotFound("The user doesnt exist, please try again.");
+            }
 
-        if (!user.IsVerified)
+            if (!user.IsVerified)
+            {
+                user!.IsVerified = true;
+                await _userManager.UpdateAsync(user);
+            }
+
+            return ResponseFactory.Ok("Verification status updated", user!.IsVerified);
+        }
+        catch (Exception ex)
         {
-            user!.IsVerified = true;
-            await _userManager.UpdateAsync(user);
+            _logger.LogError(ex, "<ChangeVerificationStatusAsync> Failed changing verification status.");
+            return ResponseFactory.InternalError();
         }
-
-        return ResponseFactory.Ok("Verification status updated", user!.IsVerified);
     }
 
     public async Task<bool> IsUserVerifiedAsync(string email)
     {
-        var user = await _userManager.FindByEmailAsync(email);
-        return user != null && user.IsVerified;
+        try
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            return user != null && user.IsVerified;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "<IsUserVerifiedAsync> Couldn't verify user.");
+            return false;
+        }
     }
 }

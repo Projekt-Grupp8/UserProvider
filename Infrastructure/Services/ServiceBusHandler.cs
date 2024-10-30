@@ -50,15 +50,23 @@ public class ServiceBusHandler
 
     public async Task<bool> VerifyCodeAsync(string email, string code)
     {
-        string providerUri = _configuration.GetConnectionString("VerificationProviderString") ?? throw new ArgumentNullException("providerUri is null");
-
-        var result = await _httpClient.PostAsJsonAsync(providerUri, new { Email = email, Code = code });
-        if (!result.IsSuccessStatusCode)
+        try
         {
+            string providerUri = _configuration.GetConnectionString("VerificationProviderString") ?? throw new ArgumentNullException("providerUri is null");
+
+            var result = await _httpClient.PostAsJsonAsync(providerUri, new { Email = email, Code = code });
+            if (!result.IsSuccessStatusCode)
+            {
+                return false;
+            }
+
+            await _userService.ChangeVerificationStatusAsync(email);
+            return result.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("SendServiceBusMessage() error : {Error}", ex.Message);
             return false;
         }
-
-        await _userService.ChangeVerificationStatusAsync(email);
-        return result.IsSuccessStatusCode;
     }
 }
