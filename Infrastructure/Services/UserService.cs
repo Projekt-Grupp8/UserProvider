@@ -6,16 +6,20 @@ using Infrastructure.Services.Interface;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Identity.Client;
+using System.Security.Claims;
 
 namespace Infrastructure.Services;
 
-public class UserService(UserManager<ApplicationUser> userManager, DataContext context, ILogger<UserService> logger, SignInManager<ApplicationUser> signInManager, JwtService jwtService) : IUserService
+public class UserService(UserManager<ApplicationUser> userManager, DataContext context, ILogger<UserService> logger, SignInManager<ApplicationUser> signInManager, JwtService jwtService, ServiceBusHandler serviceBusHandler) : IUserService
 {
     private readonly ILogger<UserService> _logger = logger;
     private readonly DataContext _context = context;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
     private readonly JwtService _jwtService = jwtService;
+    private readonly ServiceBusHandler _serviceBusHandler = serviceBusHandler;
+
 
     public async Task<ResponseResult> CreateUserAsync(SignUpUser model)
     {
@@ -27,14 +31,15 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
             }
 
             var user = UserFactory.Create(model);
-            var result = await _userManager.CreateAsync(user, model.Password);
 
+            var body = new { email = model.Email };
+            await _serviceBusHandler.SendServiceBusMessageAsync(body);
+
+            var result = await _userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
             {
                 return ResponseFactory.InternalError();
             }
-
-            // Kalla på Henrik
 
             return ResponseFactory.Ok(user);
         }
@@ -87,5 +92,28 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
         }
 
         return null!;
+    }
+
+    public async Task<ResponseResult> ChangeVerificationStatusAsync(string email)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user == null)
+        {
+            return ResponseFactory.NotFound("The user doesnt exist, please try again.");
+        }
+
+        if (!user.IsVerified)
+        {
+            user!.IsVerified = true;
+            await _userManager.UpdateAsync(user);
+        }
+
+        return ResponseFactory.Ok("Verification status updated", user!.IsVerified);
+    }
+
+    public async Task<bool> IsUserVerifiedAsync(string email)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        return user != null && user.IsVerified;
     }
 }

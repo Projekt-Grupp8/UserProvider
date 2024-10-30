@@ -25,5 +25,4 @@ public class UserFactory
             return null!;
         }
     }
-  
 }

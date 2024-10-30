@@ -10,13 +10,14 @@ using UserProvider.Filters;
 namespace UserProvider.Controllers;
 
 [ApiController]
-public class AuthUserController(UserManager<ApplicationUser> userManager, UserService userService, ILogger<AuthUserController> logger, SignInManager<ApplicationUser> signInManager, JwtService jwtService) : Controller
+public class AuthUserController(UserManager<ApplicationUser> userManager, UserService userService, ILogger<AuthUserController> logger, SignInManager<ApplicationUser> signInManager, JwtService jwtService, ServiceBusHandler serviceBusHandler) : Controller
 {
     private readonly ILogger<AuthUserController> _logger = logger;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly UserService _userService = userService;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
     private readonly JwtService _jwtService = jwtService;
+    private readonly ServiceBusHandler _serviceBusHandler = serviceBusHandler;
 
     [HttpPost("/register")]
     public async Task<IActionResult> Register(SignUpUser model)
@@ -33,16 +34,35 @@ public class AuthUserController(UserManager<ApplicationUser> userManager, UserSe
 
             return result.StatusCode switch
             {
-                ResponseStatusCode.OK => Created("Registration succeeded", result.ContentResult),
+                ResponseStatusCode.OK => Created("Registration succeeded", model.Email),
                 ResponseStatusCode.EXISTS => Conflict("The user with this e-mail address already exists"),
                 ResponseStatusCode.ERROR => BadRequest("Please provide all required information"),
                 _ => StatusCode(StatusCodes.Status500InternalServerError, "An unexpected internal error occurred. Please try again later.")
             };
-        } 
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "<Register> :: Registration failed due to an internal error: {StatusCode}", StatusCodes.Status500InternalServerError);
             return BadRequest("An unexpected internal error occurred. Please try again later.");
+        }
+    }
+
+    [HttpPost("/verify")]
+    public async Task<IActionResult> VerifyUser(VerifyUser model)
+    {
+        try
+        {
+            if (!await _serviceBusHandler.VerifyCodeAsync(model.Email, model.VerificationCode))
+            {
+                return Unauthorized("User verification not completed.");
+            }
+
+            return new OkResult();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "<VerifyUser> :: Registration failed due to an internal error: {StatusCode}", StatusCodes.Status500InternalServerError);
+            return StatusCode(StatusCodes.Status500InternalServerError, "Registration failed due to an internal error");
         }
     }
 
@@ -52,6 +72,11 @@ public class AuthUserController(UserManager<ApplicationUser> userManager, UserSe
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
+        }
+
+        if (!await _userService.IsUserVerifiedAsync(model.Email))
+        {
+            return Unauthorized("User account not verified.");
         }
 
         try

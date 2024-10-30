@@ -4,7 +4,6 @@ using Infrastructure.Data;
 using Infrastructure.Entities;
 using Infrastructure.Models;
 using Infrastructure.Services;
-using Infrastructure.Services.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +18,7 @@ public class UserService_Test
     private readonly Mock<SignInManager<ApplicationUser>> _signInManagerMock;
     private readonly Mock<JwtService> _jwtServiceMock;
     private readonly Mock<ILogger<UserService>> _loggerMock;
+    private readonly Mock<ServiceBusHandler> _serviceBusHandlerMock;
 
     public UserService_Test()
     {
@@ -45,6 +45,7 @@ public class UserService_Test
         );
 
         _jwtServiceMock = new Mock<JwtService>();
+        _serviceBusHandlerMock = new Mock<ServiceBusHandler>();
         _loggerMock = new Mock<ILogger<UserService>>();
 
         _userService = new UserService(
@@ -52,7 +53,8 @@ public class UserService_Test
             _context,
             _loggerMock.Object,
             _signInManagerMock.Object,
-            _jwtServiceMock.Object
+            _jwtServiceMock.Object,
+            _serviceBusHandlerMock.Object
         );
     }
 

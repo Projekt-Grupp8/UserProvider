@@ -4,6 +4,8 @@ using Infrastructure.Services;
 using ResponseStatusCode = Infrastructure.Models.StatusCode;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using UserProvider.Filters;
+using Microsoft.AspNetCore.Authorization;
 
 namespace UserProvider.Controllers
 {
