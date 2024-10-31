@@ -36,6 +36,7 @@ public static class ServiceConfiguration
 
         services.AddScoped<UserService>();
         services.AddScoped<AdminService>();
+        services.AddScoped<AdminCrudService>();
         services.AddScoped<JwtService>();
         services.AddScoped<ServiceBusHandler>();
         services.AddSingleton<EmailService>();
