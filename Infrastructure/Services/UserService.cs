@@ -6,8 +6,6 @@ using Infrastructure.Services.Interface;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Identity.Client;
-using System.Security.Claims;
 
 namespace Infrastructure.Services;
 
@@ -101,30 +99,7 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
         return null!;
     }
 
-    public async Task<ResponseResult> ChangeVerificationStatusAsync(string email)
-    {
-        try
-        {
-            var user = await _userManager.FindByEmailAsync(email);
-            if (user == null)
-            {
-                return ResponseFactory.NotFound("The user doesnt exist, please try again.");
-            }
 
-            if (!user.IsVerified)
-            {
-                user!.IsVerified = true;
-                await _userManager.UpdateAsync(user);
-            }
-
-            return ResponseFactory.Ok("Verification status updated", user!.IsVerified);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "<ChangeVerificationStatusAsync> Failed changing verification status.");
-            return ResponseFactory.InternalError();
-        }
-    }
 
     public async Task<bool> IsUserVerifiedAsync(string email)
     {

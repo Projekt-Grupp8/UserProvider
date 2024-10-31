@@ -1,4 +1,8 @@
 ﻿using Azure.Messaging.ServiceBus;
+using Infrastructure.Entities;
+using Infrastructure.Factories;
+using Infrastructure.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -13,14 +17,14 @@ public class ServiceBusHandler
     private readonly IConfiguration _configuration;
     private readonly ILogger<ServiceBusHandler> _logger;
     private readonly HttpClient _httpClient;
-    private readonly UserService _userService;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public ServiceBusHandler(IConfiguration configuration, ILogger<ServiceBusHandler> logger, HttpClient httpClient, UserService userService)
+    public ServiceBusHandler(IConfiguration configuration, ILogger<ServiceBusHandler> logger, HttpClient httpClient, UserManager<ApplicationUser> userManager)
     {
         _configuration = configuration;
         _logger = logger;
         _httpClient = httpClient;
-        _userService = userService;
+        _userManager = userManager;
     }
 
     public async Task SendServiceBusMessageAsync(object body)
@@ -61,13 +65,38 @@ public class ServiceBusHandler
                 return false;
             }
 
-            await _userService.ChangeVerificationStatusAsync(email);
+            await ChangeVerificationStatusAsync(email);
             return true;
         }
         catch (Exception ex)
         {
             _logger.LogError("VerifyCodeAsync() error : {Error}", ex.Message);
             return false;
+        }
+    }
+
+    public async Task<ResponseResult> ChangeVerificationStatusAsync(string email)
+    {
+        try
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                return ResponseFactory.NotFound("The user doesnt exist, please try again.");
+            }
+
+            if (!user.IsVerified)
+            {
+                user!.IsVerified = true;
+                await _userManager.UpdateAsync(user);
+            }
+
+            return ResponseFactory.Ok("Verification status updated", user!.IsVerified);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "<ChangeVerificationStatusAsync> Failed changing verification status.");
+            return ResponseFactory.InternalError();
         }
     }
 }
