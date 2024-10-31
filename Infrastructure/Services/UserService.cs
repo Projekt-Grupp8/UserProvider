@@ -94,7 +94,7 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
         catch (Exception ex)
         {
             _logger.LogError(ex, "<GenerateTokenAsync> Failed generating token.");
-            return string.Empty;
+            return null!;
         }
         return null!;
     }

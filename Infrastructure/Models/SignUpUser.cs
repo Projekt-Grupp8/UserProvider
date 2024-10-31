@@ -18,7 +18,6 @@ public class SignUpUser
     [Required(ErrorMessage = "You must provide an email.")]
     [EmailAddress(ErrorMessage = "Invalid e-mail address")]
     public string Email { get; set; } = null!;
-    public string VerificationCode { get; set; } = null!;
     public bool IsVerified { get; set; }
 
     [CheckboxRequired(ErrorMessage = "You must accept terms and conditions.")]

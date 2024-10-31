@@ -38,7 +38,7 @@ public class ServiceBusHandler
             var sender = serviceBusClient.CreateSender(queue);
 
             //var email = new { email =  body};
-            var email = new { email = "ted.pieplow@gmail.com" };
+            var email = new { email = "pieplow.dev@gmail.com" };
             var json = JsonConvert.SerializeObject(email);
             var message = new ServiceBusMessage(json);
             await sender.SendMessageAsync(message);
