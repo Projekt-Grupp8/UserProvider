@@ -13,16 +13,15 @@ namespace UserProvider.Controllers;
 public class AuthUserController(UserManager<ApplicationUser> userManager, UserService userService, ILogger<AuthUserController> logger, SignInManager<ApplicationUser> signInManager, JwtService jwtService, ServiceBusHandler serviceBusHandler) : Controller
 {
     private readonly ILogger<AuthUserController> _logger = logger;
-    private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly UserService _userService = userService;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
     private readonly JwtService _jwtService = jwtService;
     private readonly ServiceBusHandler _serviceBusHandler = serviceBusHandler;
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
 
     [HttpPost("/register")]
     public async Task<IActionResult> Register(SignUpUser model)
     {
-
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
