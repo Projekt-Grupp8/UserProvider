@@ -99,8 +99,6 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
         return null!;
     }
 
-
-
     public async Task<bool> IsUserVerifiedAsync(string email)
     {
         try

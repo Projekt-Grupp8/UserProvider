@@ -1,4 +1,5 @@
 ﻿using Infrastructure.Entities;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -9,12 +10,13 @@ namespace UserProvider.Controllers;
 [Authorize("SuperUser")]
 public class AdminCrudController : ControllerBase
 {
-    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly UserService _userService;
 
-    public AdminCrudController(UserManager<ApplicationUser> userManager)
+    public AdminCrudController(UserService userService)
     {
-        _userManager = userManager;
+        _userService = userService;
     }
+
 
     [HttpPost]
     [Route("/createadmin")]
@@ -25,6 +27,7 @@ public class AdminCrudController : ControllerBase
     }
 
     [HttpGet]
+    [Route("/getadminbyid")]
     public async Task<IActionResult> GetAdminById()
     {
         // TODO Emma
@@ -32,6 +35,7 @@ public class AdminCrudController : ControllerBase
     }
 
     [HttpGet]
+    [Route("/getalladmin")]
     public async Task<IActionResult> GetAllAdmin()
     {
         // TODO Ted
@@ -39,6 +43,7 @@ public class AdminCrudController : ControllerBase
     }
 
     [HttpPost]
+    [Route("/updateadmin")]
     public async Task<IActionResult> UpdateAdmin()
     {
         // TODO Emma
@@ -46,6 +51,7 @@ public class AdminCrudController : ControllerBase
     }
 
     [HttpPost]
+    [Route("/deleteadmin")]
     public async Task<IActionResult> DeleteAdmin()
     {
         // TODO Ted

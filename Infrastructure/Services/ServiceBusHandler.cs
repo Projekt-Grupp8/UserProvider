@@ -29,6 +29,7 @@ public class ServiceBusHandler
 
     public async Task SendServiceBusMessageAsync(string email)
     {
+        // Flytta över till appsettings.
         var connectionString = _configuration.GetConnectionString("ServiceBusConnectionString");
         var queue = "verification_request";
 
@@ -65,6 +66,8 @@ public class ServiceBusHandler
             }
 
             await ChangeVerificationStatusAsync(email);
+            await SendWelcomeMessageAsync(email);
+
             return true;
         }
         catch (Exception ex)
@@ -96,6 +99,28 @@ public class ServiceBusHandler
         {
             _logger.LogError(ex, "<ChangeVerificationStatusAsync> Failed changing verification status.");
             return ResponseFactory.InternalError();
+        }
+    }
+
+    public async Task SendWelcomeMessageAsync(string email)
+    {
+        // Flytta över till appsettings.
+        var connectionString = _configuration.GetConnectionString("ServiceBusConnectionString");
+        var queue = "welcome_request";
+
+        try
+        {
+            await using var serviceBusClient = new ServiceBusClient(connectionString);
+            var sender = serviceBusClient.CreateSender(queue);
+
+            var body = new { Email = email };
+            var json = JsonConvert.SerializeObject(body);
+            var message = new ServiceBusMessage(json);
+            await sender.SendMessageAsync(message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("SendServiceBusMessage() error : {Error}", ex.Message);
         }
     }
 }

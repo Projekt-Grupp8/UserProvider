@@ -1,10 +1,7 @@
-﻿using Infrastructure.Entities;
-using Infrastructure.Models;
+﻿using Infrastructure.Models;
 using Infrastructure.Services;
 using ResponseStatusCode = Infrastructure.Models.StatusCode;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-
 
 namespace UserProvider.Controllers
 {
