@@ -6,6 +6,7 @@ builder.Services.RegisterServices(builder.Configuration);
 builder.Logging.AddConsole();
 
 var app = builder.Build();
+await app.SeedSuperAdminAsync();
 
 
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())

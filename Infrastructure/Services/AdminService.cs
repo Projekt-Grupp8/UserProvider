@@ -17,6 +17,9 @@ public class AdminService(SignInManager<ApplicationUser> signInManager, UserMana
     {
         try
         {
+            var role = _userManager.Users.FirstOrDefault(x => x.Email == admin.Email);
+            
+            
             if (!_userManager.Users.Any(x => x.Email == admin.Email))
             {
                 return ResponseFactory.NotFound();

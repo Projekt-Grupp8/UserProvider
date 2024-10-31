@@ -27,7 +27,7 @@ public class ServiceBusHandler
         _userManager = userManager;
     }
 
-    public async Task SendServiceBusMessageAsync(object body)
+    public async Task SendServiceBusMessageAsync(string email)
     {
         var connectionString = _configuration.GetConnectionString("ServiceBusConnectionString");
         var queue = "verification_request";
@@ -37,9 +37,8 @@ public class ServiceBusHandler
             await using var serviceBusClient = new ServiceBusClient(connectionString);
             var sender = serviceBusClient.CreateSender(queue);
 
-            //var email = new { email =  body};
-            var email = new { email = "pieplow.dev@gmail.com" };
-            var json = JsonConvert.SerializeObject(email);
+            var body = new { Email = email };
+            var json = JsonConvert.SerializeObject(body);
             var message = new ServiceBusMessage(json);
             await sender.SendMessageAsync(message);
         }

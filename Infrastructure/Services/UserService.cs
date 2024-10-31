@@ -18,9 +18,9 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
     private readonly JwtService _jwtService = jwtService;
     private readonly ServiceBusHandler _serviceBusHandler = serviceBusHandler;
 
-
     public async Task<ResponseResult> CreateUserAsync(SignUpUser model)
     {
+        const string STANDARD_ROLE = "User";
         try
         {
             if (await _context.Users.AnyAsync(x => x.Email == model.Email))
@@ -30,15 +30,15 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
 
             var user = UserFactory.Create(model);
 
-            var body = new { email = model.Email };
-            await _serviceBusHandler.SendServiceBusMessageAsync(body);
+            //var body = new { email = model.Email };
+            await _serviceBusHandler.SendServiceBusMessageAsync(model.Email);
 
             var result = await _userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
             {
                 return ResponseFactory.InternalError();
             }
-
+            await _userManager.AddToRoleAsync(user, STANDARD_ROLE);
             return ResponseFactory.Ok(user);
         }
         catch (Exception ex)

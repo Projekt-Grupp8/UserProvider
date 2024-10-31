@@ -4,17 +4,15 @@ using Infrastructure.Services;
 using ResponseStatusCode = Infrastructure.Models.StatusCode;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using UserProvider.Filters;
-using Microsoft.AspNetCore.Authorization;
+
 
 namespace UserProvider.Controllers
 {
     [ApiController]
-    public class AuthAdminController(ILogger<AuthUserController> logger, AdminService adminService, SignInManager<ApplicationUser> signInManager) : ControllerBase
+    public class AuthAdminController(ILogger<AuthUserController> logger, AdminService adminService) : ControllerBase
     {
         private readonly ILogger<AuthUserController> _logger = logger;
         private readonly AdminService _adminService = adminService;
-        private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
 
 
         [HttpPost]
