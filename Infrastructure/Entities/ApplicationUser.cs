@@ -18,6 +18,7 @@ public class ApplicationUser  : IdentityUser
     public bool IsExternalAccount { get; set; } = false;
     public bool IsDarkMode { get; set; } = false;
     public bool IsVerified { get; set; } = false;
+    public bool IsSubscribed { get; set; } = false;
     public DateTime? BirthDate { get; set; }
     public DateTime Created {  get; set; }
     public DateTime Updated { get; set; }
