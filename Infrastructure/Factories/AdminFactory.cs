@@ -46,4 +46,25 @@ public class AdminFactory
             return null!;
         }
     }
+
+    public static Admin Create(ApplicationUser entity, List<string> roles)
+    {
+        try
+        {
+            return new Admin
+            {
+                Email = entity.Email!,
+                FirstName = entity.FirstName!,
+                LastName = entity.LastName!,
+                Created = entity.Created,
+                Updated = entity.Updated,
+                Roles = roles
+            };
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"<AdminFactory> ApplicationUser Create:: ERROR: {ex.Message}");
+            return null!;
+        }
+    }
 }

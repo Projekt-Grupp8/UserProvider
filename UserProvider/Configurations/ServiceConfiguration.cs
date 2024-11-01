@@ -16,7 +16,12 @@ public static class ServiceConfiguration
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
         services.AddLogging();
-        services.AddAuthorization();
+
+        services.AddAuthorizationBuilder()
+            .AddPolicy("SuperUser", policy => policy.RequireRole("SuperUser"))
+            .AddPolicy("AuthenticatedAdmins", policy => policy.RequireRole("SuperUser", "Admin"))
+            .AddPolicy("AuthenticatedUsers", policy => policy.RequireRole("SuperUser", "Admin", "User"));
+
         services.ValidateJWT(configuration);
 
         var connectionString = configuration.GetConnectionString("AzureSqlServer")

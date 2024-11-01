@@ -75,8 +75,7 @@ public class AdminCrudService
         try
         {
             var userList = await _userManager.Users.ToListAsync();
-
-            var adminRoles = new[] { "admin", "SuperUser" };
+            var adminRoles = new[] { "Admin", "SuperUser" };
             var adminUsers = new List<ApplicationUser>();
 
             foreach (var user in userList)
@@ -87,7 +86,15 @@ public class AdminCrudService
                     adminUsers.Add(user);
                 }
             }
-            return adminUsers.Count > 0 ? ResponseFactory.Ok(adminUsers) : ResponseFactory.NotFound();
+
+            var adminModels = new List<Admin>();
+            foreach (var admin in adminUsers)
+            {
+                var roles = (await _userManager.GetRolesAsync(admin)).ToList();
+                adminModels.Add(AdminFactory.Create(admin, roles));
+            }
+
+            return adminModels.Count > 0 ? ResponseFactory.Ok(adminModels) : ResponseFactory.NotFound();
         }
         catch (Exception ex)
         {
