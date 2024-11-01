@@ -108,12 +108,15 @@ public class AdminCrudService
             if (findAdmin is null)
             {
                 await _userManager.UpdateAsync(body);
+                return null!;
             }
 
+            return null!;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "ERROR:: AdminCrudService; UpdateAdminAsync()");
+            return null!;
         }
     }
 
