@@ -1,4 +1,6 @@
 ﻿using Infrastructure.Entities;
+using Infrastructure.Factories;
+using Infrastructure.Models;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -19,18 +21,28 @@ public class AdminCrudController : ControllerBase
 
     [HttpPost]
     [Route("/createadmin")]
-    public async Task<IActionResult> CreateAdmin()
+    public async Task<IActionResult> CreateAdmin(RegisterAdmin model)
     {
         // TODO Emma
-        return new OkResult();
+        var createAdmin = await _adminCrudService.CreateAdminAsync(model);
+        if (createAdmin is not null) 
+        {
+            return Created();
+        }
+        return BadRequest();
     }
 
     [HttpGet]
     [Route("/getadminbyid")]
-    public async Task<IActionResult> GetOneAdmin()
+    public async Task<IActionResult> GetOneAdmin(string email)
     {
         // TODO Emma
-        return new OkResult();
+        var getAdmin = await _adminCrudService.GetOneAdminAsync(email);
+        if (getAdmin is not null)
+        {
+			return Ok(email);
+        }
+        return NotFound($"{email} not found.");
     }
 
     [HttpGet]
@@ -48,10 +60,15 @@ public class AdminCrudController : ControllerBase
 
     [HttpPost]
     [Route("/updateadmin")]
-    public async Task<IActionResult> UpdateAdmin()
+    public async Task<IActionResult> UpdateAdmin(RegisterAdmin model)
     {
         // TODO Emma
-        return new OkResult();
+        var updateAdmin = await _adminCrudService.UpdateAdminAsync(model);
+        if (updateAdmin is not null)
+        {
+            return Ok(model.Email);
+        }
+        return NotFound(model.Email);
     }
 
     [HttpPost]
