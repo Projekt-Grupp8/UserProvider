@@ -100,21 +100,22 @@ public class AdminCrudService
 
     public async Task<ResponseResult> UpdateAdminAsync(RegisterAdmin model)
     {
-		// TODO Emma
-		try
-		{
-			var findAdmin = ExistsAsync(model.Email);
-			var body = AdminFactory.Create(model);
-			if (findAdmin is null)
-			{
-				await _userManager.UpdateAsync(body);
-			}
+        // TODO Emma
+        try
+        {
+            var findAdmin = ExistsAsync(model.Email);
+            var body = AdminFactory.Create(model);
+            if (findAdmin is null)
+            {
+                await _userManager.UpdateAsync(body);
+            }
 
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "ERROR:: AdminCrudService; UpdateAdminAsync()");
-		}
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "ERROR:: AdminCrudService; UpdateAdminAsync()");
+        }
+    }
 
     public async Task<bool> DeleteAdminAsync(string email)
     {
