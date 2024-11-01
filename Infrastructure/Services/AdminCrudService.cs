@@ -82,7 +82,7 @@ public class AdminCrudService
 		{
 			var findAdmin = ExistsAsync(model.Email);
 			var body = AdminFactory.Create(model);
-			if (findAdmin is null)
+			if (findAdmin is not null)
 			{
 				await _userManager.UpdateAsync(body);
 			}
