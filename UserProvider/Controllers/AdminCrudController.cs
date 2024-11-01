@@ -45,7 +45,7 @@ public class AdminCrudController : ControllerBase
             return Ok(adminList.ContentResult);
         }
 
-        return NotFound();
+        return NotFound("No admins found.");
     }
 
     [HttpPost]
