@@ -10,13 +10,14 @@ namespace UserProvider.Controllers;
 [Authorize("SuperUser")]
 public class AdminCrudController : ControllerBase
 {
+    private readonly AdminCrudService _adminCrudService;
     private readonly UserService _userService;
 
-    public AdminCrudController(UserService userService)
+    public AdminCrudController(UserService userService, AdminCrudService adminCrudService)
     {
         _userService = userService;
+        _adminCrudService = adminCrudService;
     }
-
 
     [HttpPost]
     [Route("/createadmin")]
@@ -28,7 +29,7 @@ public class AdminCrudController : ControllerBase
 
     [HttpGet]
     [Route("/getadminbyid")]
-    public async Task<IActionResult> GetAdminById()
+    public async Task<IActionResult> GetOneAdmin()
     {
         // TODO Emma
         return new OkResult();
@@ -38,8 +39,13 @@ public class AdminCrudController : ControllerBase
     [Route("/getalladmin")]
     public async Task<IActionResult> GetAllAdmin()
     {
-        // TODO Ted
-        return new OkResult();
+        var adminList = await _adminCrudService.GetAllAdmin();
+        if (adminList.ContentResult is not null)
+        {
+            return Ok(adminList.ContentResult);
+        }
+
+        return NotFound();
     }
 
     [HttpPost]
