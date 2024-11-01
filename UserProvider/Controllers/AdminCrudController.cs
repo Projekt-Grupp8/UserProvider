@@ -7,15 +7,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace UserProvider.Controllers;
 
 [ApiController]
-[Authorize("SuperUser")]
+//[Authorize("SuperUser")]
 public class AdminCrudController : ControllerBase
 {
     private readonly AdminCrudService _adminCrudService;
-    private readonly UserService _userService;
 
-    public AdminCrudController(UserService userService, AdminCrudService adminCrudService)
+    public AdminCrudController(AdminCrudService adminCrudService)
     {
-        _userService = userService;
         _adminCrudService = adminCrudService;
     }
 

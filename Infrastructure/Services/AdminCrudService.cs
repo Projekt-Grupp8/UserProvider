@@ -11,13 +11,11 @@ public class AdminCrudService
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<AdminCrudService> _logger;
-    private readonly RoleManager<ApplicationUser> _roleManager;
 
-    public AdminCrudService(UserManager<ApplicationUser> userManager, ILogger<AdminCrudService> logger, RoleManager<ApplicationUser> roleManager)
+    public AdminCrudService(UserManager<ApplicationUser> userManager, ILogger<AdminCrudService> logger)
     {
         _userManager = userManager;
         _logger = logger;
-        _roleManager = roleManager;
     }
 
     public async Task<ResponseResult> CreateAdminAsync(RegisterAdmin model)
@@ -78,7 +76,7 @@ public class AdminCrudService
         {
             var userList = await _userManager.Users.ToListAsync();
 
-            var adminRoles = new[] { "admin", "superuser" };
+            var adminRoles = new[] { "admin", "SuperUser" };
             var adminUsers = new List<ApplicationUser>();
 
             foreach (var user in userList)
