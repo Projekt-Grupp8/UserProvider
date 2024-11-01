@@ -6,7 +6,7 @@ namespace UserProvider.Configurations;
 
 public static class RoleSeeder
 {
-    public static async Task SeedSuperAdminAsync(this IApplicationBuilder app)
+    public static async Task SeedSuperAdminAsync(this IApplicationBuilder app, IConfiguration configuration)
     {
         using var scope = app.ApplicationServices.CreateScope();
 
@@ -20,8 +20,8 @@ public static class RoleSeeder
                 await roleManager.CreateAsync(new IdentityRole(role));
             }
 
-        string adminEmail = "admin@rika.com";
-        string adminPassword = "Admin123!";
+        string adminEmail = configuration["AdminSettings:Email"]!;
+        string adminPassword = configuration["AdminSettings:Password"]!;
 
         if (userManager.Users.All(u => u.UserName != "admin@rika.com"))
         {

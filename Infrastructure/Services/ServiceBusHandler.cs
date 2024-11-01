@@ -1,4 +1,5 @@
-﻿using Azure.Messaging.ServiceBus;
+﻿using Azure.Core.Pipeline;
+using Azure.Messaging.ServiceBus;
 using Infrastructure.Entities;
 using Infrastructure.Factories;
 using Infrastructure.Models;

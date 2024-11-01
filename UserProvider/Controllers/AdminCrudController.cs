@@ -1,13 +1,11 @@
-﻿using Infrastructure.Entities;
-using Infrastructure.Services;
+﻿using Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace UserProvider.Controllers;
 
 [ApiController]
-//[Authorize("SuperUser")]
+//[Authorize(Policy = "AuthenticatedAdmins")]
 public class AdminCrudController : ControllerBase
 {
     private readonly AdminCrudService _adminCrudService;
