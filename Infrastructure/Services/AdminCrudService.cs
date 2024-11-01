@@ -2,29 +2,70 @@
 using Infrastructure.Factories;
 using Infrastructure.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 namespace Infrastructure.Services;
 
 public class AdminCrudService
 {
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ILogger<AdminCrudService> _logger;
 
-    public AdminCrudService(UserManager<ApplicationUser> userManager)
+	public AdminCrudService(UserManager<ApplicationUser> userManager, ILogger<AdminCrudService> logger)
+	{
+		_userManager = userManager;
+		_logger = logger;
+	}
+
+	public async Task<ResponseResult> CreateAdminAsync(RegisterAdmin model)
     {
-        _userManager = userManager;
+        // TODO Emma
+        try
+        {
+            var findAdmin = ExistsAsync(model.Email);
+            var body = AdminFactory.Create(model);
+            if (findAdmin.IsCompletedSuccessfully)
+            {
+                await _userManager.CreateAsync(body);
+                return ResponseFactory.Ok(body);
+            }
+
+		}
+        catch (Exception ex) 
+        {
+            _logger.LogError(ex,"ERROR:: AdminCrudService; CreateAdminAsync()");
+        }
+        
+        return ResponseFactory.Error("Something went wrong, try again later");
     }
 
-    public async Task<ResponseResult> CreateAdminAsync(RegisterAdmin model)
+    public async Task<ResponseResult> GetOneAdminAsync(string email, RegisterAdmin model)
     {
-        // TODO
-        return null!;
-    }
+		// TODO Emma
+		try
+		{
+			var findAdmin = ExistsAsync(email);
+            var admin = AdminFactory.Create(model); // gör enbart om användaren 
+            if (findAdmin.IsCompletedSuccessfully)
+            {
+                var result = await _userManager.FindByEmailAsync(email); // gör väl samma som existsAsync?
+                
+                return ResponseFactory.Ok(admin);
+			}
+			
+            
+            
 
-    public async Task<ResponseResult> GetAdminByIdAsync(string email)
-    {
-        // TODO
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "ERROR:: AdminCrudService; GetAdminByIdAsync");
+		}
 
-        return null!;
+		return null!;
+
+		
     }
 
     public async Task<ResponseResult> GetAllAdmin()
@@ -36,10 +77,24 @@ public class AdminCrudService
 
     public async Task<ResponseResult> UpdateAdminAsync(RegisterAdmin model)
     {
-        // TODO
+		// TODO Emma
+		try
+		{
+			var findAdmin = ExistsAsync(model.Email);
+			var body = AdminFactory.Create(model);
+			if (findAdmin is null)
+			{
+				await _userManager.UpdateAsync(body);
+			}
 
-        return null!;
-    }
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "ERROR:: AdminCrudService; UpdateAdminAsync()");
+		}
+
+		return null!;
+	}
 
     public async Task<ResponseResult> DeleteAdminAsync(string email)
     {
@@ -51,6 +106,20 @@ public class AdminCrudService
     public async Task<ResponseResult> ExistsAsync(string email)
     {
         // TODO
+        try
+        {
+            var result = await _userManager.FindByEmailAsync(email);
+
+			if (result is null)
+            {
+                _logger.LogError($"Could not find {email}", email);
+            }
+            return ResponseFactory.Ok();
+        }
+        catch(Exception ex) 
+        {
+            _logger.LogError(ex, "ERROR:: AdminCrudService; ExistsAsync()");
+        }
 
         return null!;
     }
