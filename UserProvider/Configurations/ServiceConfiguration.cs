@@ -33,7 +33,6 @@ public static class ServiceConfiguration
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<DataContext>();
 
-
         services.AddScoped<UserService>();
         services.AddScoped<AdminService>();
         services.AddScoped<AdminCrudService>();

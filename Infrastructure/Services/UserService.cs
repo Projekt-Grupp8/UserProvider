@@ -30,7 +30,6 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
 
             var user = UserFactory.Create(model);
 
-            //var body = new { email = model.Email };
             await _serviceBusHandler.SendServiceBusMessageAsync(model.Email);
 
             var result = await _userManager.CreateAsync(user, model.Password);

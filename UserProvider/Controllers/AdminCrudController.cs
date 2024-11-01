@@ -1,6 +1,4 @@
 ﻿using Infrastructure.Entities;
-using Infrastructure.Factories;
-using Infrastructure.Models;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -12,35 +10,21 @@ namespace UserProvider.Controllers;
 [Authorize("SuperUser")]
 public class AdminCrudController : ControllerBase
 {
+    private readonly AdminCrudService _adminCrudService;
     private readonly UserService _userService;
-    private readonly AdminCrudService _adminService;
 
-	public AdminCrudController(UserService userService, AdminCrudService adminService)
-	{
-		_userService = userService;
-		_adminService = adminService;
-	}
+    public AdminCrudController(UserService userService, AdminCrudService adminCrudService)
+    {
+        _userService = userService;
+        _adminCrudService = adminCrudService;
+    }
 
-
-	[HttpPost]
+    [HttpPost]
     [Route("/createadmin")]
-    public async Task<IActionResult> CreateAdmin(RegisterAdmin model)
+    public async Task<IActionResult> CreateAdmin()
     {
         // TODO Emma
-        try
-        {
-            if (!ModelState.IsValid)
-            {
-                await _adminService.CreateAdminAsync(model);
-            }
-
-            return new OkResult();
-        }
-        catch (Exception ex)
-        {
-            return new BadRequestResult();
-        }
-
+        return new OkResult();
     }
 
     [HttpGet]
@@ -55,8 +39,13 @@ public class AdminCrudController : ControllerBase
     [Route("/getalladmin")]
     public async Task<IActionResult> GetAllAdmin()
     {
-        // TODO Ted
-        return new OkResult();
+        var adminList = await _adminCrudService.GetAllAdmin();
+        if (adminList.ContentResult is not null)
+        {
+            return Ok(adminList.ContentResult);
+        }
+
+        return NotFound("No admins found.");
     }
 
     [HttpPost]
