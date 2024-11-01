@@ -23,7 +23,7 @@ public class AdminCrudService
         // TODO Emma
         try
         {
-            var findAdmin = _userManager.FindByEmailAsync(model.Email);
+            var findAdmin = _userManager.FindByEmailAsync(model.Email!);
             if(findAdmin is not null)
             {
                 return ResponseFactory.Exists(model.Email);
