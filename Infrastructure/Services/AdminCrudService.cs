@@ -111,7 +111,7 @@ public class AdminCrudService
                 return null!;
             }
 
-            return null!;
+            return ResponseFactory.Ok();
         }
         catch (Exception ex)
         {
