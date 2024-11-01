@@ -20,20 +20,19 @@ public class AdminCrudService
 
     public async Task<ResponseResult> CreateAdminAsync(RegisterAdmin model)
     {
-        // TODO Emma
+        const string ADMIN_USER = "Admin";
         try
         {
-            var findAdmin = _userManager.FindByEmailAsync(model.Email!);
+            var findAdmin = await _userManager.FindByEmailAsync(model.Email!);
             if(findAdmin is not null)
             {
                 return ResponseFactory.Exists(model.Email);
             }
             var body = AdminFactory.Create(model);
-            if (findAdmin is null)
-            {
-                await _userManager.CreateAsync(body);
-                return ResponseFactory.Ok("New admin created {body.Email}",body.Email);
-            }
+
+            await _userManager.CreateAsync(body, model.Password);
+            await _userManager.AddToRoleAsync(body, ADMIN_USER);
+            return ResponseFactory.Ok("New admin created {body.Email}",body.Email);
 
         }
         catch (Exception ex)

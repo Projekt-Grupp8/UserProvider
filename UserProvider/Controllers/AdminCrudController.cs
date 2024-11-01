@@ -27,7 +27,7 @@ public class AdminCrudController : ControllerBase
         var createAdmin = await _adminCrudService.CreateAdminAsync(model);
         if (createAdmin is not null) 
         {
-            return Created();
+            return Ok(model.Email);
         }
         return BadRequest();
     }
@@ -64,7 +64,7 @@ public class AdminCrudController : ControllerBase
     {
         // TODO Emma
         var updateAdmin = await _adminCrudService.UpdateAdminAsync(model);
-        if (updateAdmin is not null)
+        if (updateAdmin.ContentResult is not null)
         {
             return Ok(model.Email);
         }
