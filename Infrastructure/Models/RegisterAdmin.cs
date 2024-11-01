@@ -20,7 +20,7 @@ public class RegisterAdmin
     public string? ProfileImageUrl { get; set; }
     public bool IsDarkMode { get; set; } = false;
     public DateTime? BirthDate { get; set; }
-    public DateTime Created { get; set; }
-    public DateTime Updated { get; set; }
-    public DateTime LastLoginDate { get; set; }
+    public DateTime? Created { get; set; }
+    public DateTime? Updated { get; set; }
+    public DateTime? LastLoginDate { get; set; }
 }

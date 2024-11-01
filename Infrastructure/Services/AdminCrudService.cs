@@ -20,7 +20,7 @@ public class AdminCrudService
 
     public async Task<ResponseResult> CreateAdminAsync(RegisterAdmin model)
     {
-        // TODO Emma
+
         try
         {
             var findAdmin = ExistsAsync(model.Email);
@@ -28,6 +28,7 @@ public class AdminCrudService
             if (findAdmin.IsCompletedSuccessfully)
             {
                 await _userManager.CreateAsync(body);
+
                 return ResponseFactory.Ok(body);
             }
 
