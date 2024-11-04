@@ -4,6 +4,7 @@ using Infrastructure.Models;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace UserProvider.Controllers;
 
@@ -22,12 +23,15 @@ public class AdminCrudController : ControllerBase
     [Route("/createadmin")]
     public async Task<IActionResult> CreateAdmin(RegisterAdmin model)
     {
-        // TODO Emma
-        var createAdmin = await _adminCrudService.CreateAdminAsync(model);
-        if (createAdmin is not null) 
+        if (ModelState.IsValid)
         {
-            return Ok(model.Email);
-        }
+			var createAdmin = await _adminCrudService.CreateAdminAsync(model);
+			if (createAdmin is not null)
+			{
+				return Ok(model.Email);
+			}
+		}
+
         return BadRequest();
     }
 
@@ -35,13 +39,21 @@ public class AdminCrudController : ControllerBase
     [Route("/getadminbyid")]
     public async Task<IActionResult> GetOneAdmin(string email)
     {
-        // TODO Emma
-        var getAdmin = await _adminCrudService.GetOneAdminAsync(email);
-        if (getAdmin is not null)
+        if (ModelState.IsValid) 
         {
-			return Ok(email);
-        }
-        return NotFound($"{email} not found.");
+            
+			var getAdmin = await _adminCrudService.GetOneAdminAsync(email);
+			if (getAdmin.ContentResult is not null)
+			{
+				return Ok(getAdmin.ContentResult);
+			}
+
+			return NotFound($"{email} not found.");
+		}
+
+
+        return BadRequest();
+       
     }
 
     [HttpGet]
@@ -61,13 +73,17 @@ public class AdminCrudController : ControllerBase
     [Route("/updateadmin")]
     public async Task<IActionResult> UpdateAdmin(RegisterAdmin model)
     {
-        // TODO Emma
-        var updateAdmin = await _adminCrudService.UpdateAdminAsync(model);
-        if (updateAdmin.ContentResult is not null)
+        if (ModelState.IsValid)
         {
-            return Ok(model.Email);
-        }
-        return NotFound(model.Email);
+
+			var updateAdmin = await _adminCrudService.UpdateAdminAsync(model);
+			if (updateAdmin.ContentResult is not null)
+			{
+				return Ok($"Admin updated: {model.Email}");
+			}
+			return NotFound(model.Email);
+		}
+        return BadRequest();
     }
 
     [HttpPost]

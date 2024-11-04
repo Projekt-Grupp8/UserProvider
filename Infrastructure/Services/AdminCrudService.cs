@@ -106,22 +106,18 @@ public class AdminCrudService
         // TODO Emma
         try
         {
-            var findAdmin = _userManager.FindByEmailAsync(model.Email);  //Kollar om mejl finns
-			var body = AdminFactory.Create(model); //omvandlar registerAdmin till aplicationuser för att kunna updatera i usermanager
+            var findAdmin = await _userManager.FindByEmailAsync(model.Email);  //Kollar om mejl finns
+			
 			if (findAdmin is null)
             {
                 return ResponseFactory.NotFound(model.Email);
 
             }
+			var body = AdminFactory.Create(model); //omvandlar registerAdmin till aplicationuser för att kunna updatera i usermanager
+			await _userManager.UpdateAsync(body);
             
-            if (findAdmin is not null)
-            {
-                await _userManager.UpdateAsync(body);
-				
-			}
-            var result = AdminFactory.Create(body); // omvandlar aplicationUser till admin för att enbart skicka med specifika uppgifter
 
-			return ResponseFactory.Ok(result); //Retunerar hel adminObjektet
+			return ResponseFactory.Ok(AdminFactory.Create(body)); //Retunerar hel adminObjektet
         }
         catch (Exception ex)
         {
