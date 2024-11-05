@@ -20,6 +20,7 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
 
     public async Task<ResponseResult> CreateUserAsync(SignUpUser model)
     {
+
         const string STANDARD_ROLE = "User";
         try
         {
@@ -29,21 +30,31 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
             }
 
             var user = UserFactory.Create(model);
-
-            await _serviceBusHandler.SendServiceBusMessageAsync(model.Email);
+            if (user == null)
+            {
+                return ResponseFactory.InternalError("Mapping failed.");
+            }
 
             var result = await _userManager.CreateAsync(user, model.Password);
+
             if (!result.Succeeded)
             {
                 return ResponseFactory.InternalError();
             }
-            await _userManager.AddToRoleAsync(user, STANDARD_ROLE);
+
+            var roleResult = await _userManager.AddToRoleAsync(user, STANDARD_ROLE);
+            await _serviceBusHandler.SendServiceBusMessageAsync(model.Email);
+            if (!roleResult.Succeeded)
+            {
+                return ResponseFactory.InternalError("Adding role failed.");
+            }
+
             return ResponseFactory.Ok(user);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "<CreateUserSync> Registration failed.");
-            return ResponseFactory.InternalError();
+            return ResponseFactory.InternalError("Try catch");
         }
     }
 

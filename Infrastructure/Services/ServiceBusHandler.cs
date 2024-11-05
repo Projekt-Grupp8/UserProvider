@@ -20,6 +20,8 @@ public class ServiceBusHandler
     private readonly HttpClient _httpClient;
     private readonly UserManager<ApplicationUser> _userManager;
 
+    public ServiceBusHandler() : this(null!, null!, null!, null!) { }
+
     public ServiceBusHandler(IConfiguration configuration, ILogger<ServiceBusHandler> logger, HttpClient httpClient, UserManager<ApplicationUser> userManager)
     {
         _configuration = configuration;

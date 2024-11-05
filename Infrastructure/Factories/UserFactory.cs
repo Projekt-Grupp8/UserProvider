@@ -9,20 +9,22 @@ public class UserFactory
     // Entitet => Model
     public static ApplicationUser Create(SignUpUser model)
     {
-        try
+        return model == null
+            ? throw new ArgumentNullException(nameof(model))
+            : new ApplicationUser
         {
-            return new ApplicationUser
-            {
-                UserName = model.Email,
-                Email = model.Email,
-                Created = DateTime.UtcNow,
-                Updated = DateTime.UtcNow,
-            };
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"<UserFactory> ApplicationUser Create:: ERROR: {ex.Message}");
-            return null!;
-        }
+            UserName = model.Email,
+            Email = model.Email,
+            FirstName = null,
+            LastName = null,
+            Created = DateTime.UtcNow,
+            Updated = DateTime.UtcNow,
+            IsVerified = false,
+            IsSubscribed = false,
+            IsDarkMode = false,
+            BirthDate = null,
+            ProfileImageUrl = null,
+            Gender = null
+        };
     }
 }

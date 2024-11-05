@@ -76,12 +76,14 @@ public class ResponseFactory
         };
     }
 
-    public static ResponseResult Exists(string? message = null)
+    public static ResponseResult Exists(string? message = null, bool? Succeeded = false)
     {
         return new ResponseResult
         {
             Message = message ?? "Already exists.",
-            StatusCode = StatusCode.EXISTS
+            StatusCode = StatusCode.EXISTS,
+            Succeeded = Succeeded
+           
         };
     }
 

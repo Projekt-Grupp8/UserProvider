@@ -48,7 +48,6 @@ public class AdminCrudService
 
     public async Task<ResponseResult> GetOneAdminAsync(string email)
     {
-        // TODO Emma
         try
         {
             var result = await _userManager.FindByEmailAsync(email);
@@ -57,7 +56,6 @@ public class AdminCrudService
                 ? ResponseFactory.NotFound(email) 
                 : ResponseFactory.Ok(AdminFactory.Create(result));
 
-            
         }
         catch (Exception ex)
         {
@@ -65,7 +63,6 @@ public class AdminCrudService
             return ResponseFactory.Error();
 			
 		}
-
     }
 
     public async Task<ResponseResult> GetAllAdmin()
