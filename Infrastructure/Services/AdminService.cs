@@ -1,17 +1,18 @@
 ﻿using Infrastructure.Entities;
 using Infrastructure.Factories;
 using Infrastructure.Models;
+using Infrastructure.Services.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 namespace Infrastructure.Services;
 
-public class AdminService(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager, JwtService jwtService, ILogger<AdminService> logger)
+public class AdminService(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager, IJwtService jwtService, ILogger<AdminService> logger)
 {
     private readonly ILogger<AdminService> _logger = logger;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
-    private readonly JwtService _jwtService = jwtService;
+    private readonly IJwtService _jwtService = jwtService;
 
     public async Task<ResponseResult> SignIn(SignInAdmin admin)
     {

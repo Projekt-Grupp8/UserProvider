@@ -9,13 +9,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services;
 
-public class UserService(UserManager<ApplicationUser> userManager, DataContext context, ILogger<UserService> logger, SignInManager<ApplicationUser> signInManager, JwtService jwtService, ServiceBusHandler serviceBusHandler) : IUserService
+public class UserService(UserManager<ApplicationUser> userManager, DataContext context, ILogger<UserService> logger, SignInManager<ApplicationUser> signInManager, IJwtService jwtService, ServiceBusHandler serviceBusHandler) : IUserService
 {
     private readonly ILogger<UserService> _logger = logger;
     private readonly DataContext _context = context;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
-    private readonly JwtService _jwtService = jwtService;
+    private readonly IJwtService _jwtService = jwtService;
     private readonly ServiceBusHandler _serviceBusHandler = serviceBusHandler;
 
     public async Task<ResponseResult> CreateUserAsync(SignUpUser model)
@@ -39,7 +39,7 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
 
             if (!result.Succeeded)
             {
-                return ResponseFactory.InternalError();
+                return ResponseFactory.InternalError("Test");
             }
 
             var roleResult = await _userManager.AddToRoleAsync(user, STANDARD_ROLE);
@@ -82,11 +82,12 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
             }
 
             return ResponseFactory.Ok(new { user.Email, Token = token }, "Succeeded");
+
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "<SignInUserAsync> Sign in failed.");
-            return ResponseFactory.InternalError();
+            return ResponseFactory.InternalError("Try catch");
         }
     }
 
@@ -120,6 +121,23 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
         {
             _logger.LogError(ex, "<IsUserVerifiedAsync> Couldn't verify user.");
             return false;
+        }
+    }
+
+    public async Task<ResponseResult> GetAllUsersAsync()
+    {
+        try
+        {
+            var userList = await _userManager.Users.ToListAsync();
+            var users = UserFactory.Create(userList);
+            return users.Count > 0 
+                ? ResponseFactory.Ok(users) 
+                : ResponseFactory.NotFound("No users found");
+        }
+        catch (Exception)
+        {
+            _logger.LogError("<GetAllUsersAsync> Couldn't get all users");
+            return ResponseFactory.InternalError();
         }
     }
 }

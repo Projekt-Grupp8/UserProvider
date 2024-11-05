@@ -16,20 +16,20 @@ public class ResponseResult
     public object? ContentResult { get; set; }
     public string? Message { get; set; }
     public bool? Succeeded { get; set; }
-    public override bool Equals(object obj)
-    {
-        if (obj is ResponseResult other)
-        {
-            return ContentResult == other.ContentResult &&
-                   Message == other.Message &&
-                   StatusCode == other.StatusCode &&
-                   Succeeded == other.Succeeded;
-        }
-        return false;
-    }
+    //public override bool Equals(object obj)
+    //{
+    //    if (obj is ResponseResult other)
+    //    {
+    //        return ContentResult == other.ContentResult &&
+    //               Message == other.Message &&
+    //               StatusCode == other.StatusCode &&
+    //               Succeeded == other.Succeeded;
+    //    }
+    //    return false;
+    //}
 
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(ContentResult, Message, StatusCode, Succeeded);
-    }
+    //public override int GetHashCode()
+    //{
+    //    return HashCode.Combine(ContentResult, Message, StatusCode, Succeeded);
+    //}
 }

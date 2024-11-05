@@ -1,6 +1,7 @@
 ﻿using Infrastructure.Data;
 using Infrastructure.Entities;
 using Infrastructure.Services;
+using Infrastructure.Services.Interface;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -41,7 +42,7 @@ public static class ServiceConfiguration
         services.AddScoped<UserService>();
         services.AddScoped<AdminService>();
         services.AddScoped<AdminCrudService>();
-        services.AddScoped<JwtService>();
+        services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<ServiceBusHandler>();
         services.AddSingleton<EmailService>();
     }

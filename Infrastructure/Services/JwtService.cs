@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Infrastructure.Services.Interface;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -7,7 +8,7 @@ using System.Text;
 
 namespace Infrastructure.Services;
 
-public class JwtService
+public class JwtService : IJwtService
 {
     public JwtService(IConfiguration configuration, ILogger<JwtService> logger)
     {

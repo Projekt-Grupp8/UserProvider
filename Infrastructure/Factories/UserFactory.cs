@@ -12,19 +12,29 @@ public class UserFactory
         return model == null
             ? throw new ArgumentNullException(nameof(model))
             : new ApplicationUser
+            {
+                UserName = model.Email,
+                Email = model.Email,
+                FirstName = null,
+                LastName = null,
+                Created = DateTime.UtcNow,
+                Updated = DateTime.UtcNow,
+                IsVerified = false,
+                IsSubscribed = false,
+                IsDarkMode = false,
+                BirthDate = null,
+                ProfileImageUrl = null,
+                Gender = null
+            };
+    }
+
+    public static List<User> Create(List<ApplicationUser> userList)
+    {
+        return userList.Select(user => new User
         {
-            UserName = model.Email,
-            Email = model.Email,
-            FirstName = null,
-            LastName = null,
-            Created = DateTime.UtcNow,
-            Updated = DateTime.UtcNow,
-            IsVerified = false,
-            IsSubscribed = false,
-            IsDarkMode = false,
-            BirthDate = null,
-            ProfileImageUrl = null,
-            Gender = null
-        };
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Email = user.Email,
+        }).ToList();
     }
 }

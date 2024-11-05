@@ -7,5 +7,4 @@ namespace Infrastructure.Data;
 
 public class DataContext(DbContextOptions<DataContext> options) : IdentityDbContext<ApplicationUser>(options)
 {
-    public DbSet<ApplicationUser> Users { get; set; }
 }
