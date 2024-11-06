@@ -6,16 +6,17 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using UserProvider.Filters;
+using Infrastructure.Services.Interface;
 
 namespace UserProvider.Controllers;
 
 [ApiController]
-public class AuthUserController(UserManager<ApplicationUser> userManager, UserService userService, ILogger<AuthUserController> logger, SignInManager<ApplicationUser> signInManager, JwtService jwtService, ServiceBusHandler serviceBusHandler) : Controller
+public class AuthUserController(UserManager<ApplicationUser> userManager, UserService userService, ILogger<AuthUserController> logger, SignInManager<ApplicationUser> signInManager, IJwtService jwtService, ServiceBusHandler serviceBusHandler) : Controller
 {
     private readonly ILogger<AuthUserController> _logger = logger;
     private readonly UserService _userService = userService;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
-    private readonly JwtService _jwtService = jwtService;
+    private readonly IJwtService _jwtService = jwtService;
     private readonly ServiceBusHandler _serviceBusHandler = serviceBusHandler;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
 

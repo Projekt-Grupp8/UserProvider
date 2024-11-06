@@ -181,6 +181,7 @@ public class UserService_Test
         // Vi måste mocka JWT service också, annars går det inte!!
         string token = "simulated-jwt-token";
         _mockJwtService.Setup(x => x.GetToken(signInUser.Email, "User")).Returns(token);
+        var tokenResult = await _userService.GenerateTokenAsync(user.Email);
 
         // Act
         var result = await _userService.SignInUserAsync(signInUser);
