@@ -36,8 +36,8 @@ public class AdminCrudController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/getadminbyid")]
-    public async Task<IActionResult> GetOneAdmin(string email)
+    [Route("/getadminbyemail")]
+    public async Task<IActionResult> GetOneAdmin([FromQuery] string email)
     {
         if (ModelState.IsValid)
         {
@@ -92,9 +92,9 @@ public class AdminCrudController : ControllerBase
         return BadRequest();
     }
 
-    [HttpPost]
+    [HttpDelete]
     [Route("/deleteadmin")]
-    public async Task<IActionResult> DeleteAdmin(string email)
+    public async Task<IActionResult> DeleteAdmin([FromQuery]string email)
     {
         try
         {

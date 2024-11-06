@@ -92,7 +92,7 @@ public class AdminFactory
         if (model.Email != existingUser.Email)
         {
             existingUser.Email = model.Email;
-            existingUser.UserName = model.Email; 
+            existingUser.UserName = model.Email;
         }
 
         existingUser.FirstName = model.FirstName;
