@@ -4,6 +4,7 @@ using Infrastructure.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Reflection.Metadata.Ecma335;
 
 namespace Infrastructure.Services;
 
@@ -20,13 +21,12 @@ public class AdminCrudService
 
     public async Task<ResponseResult> CreateAdminAsync(RegisterAdmin model)
     {
-
         const string ADMIN_USER = "Admin";
 
         try
         {
             var findAdmin = await _userManager.FindByEmailAsync(model.Email!);
-            if(findAdmin is not null)
+            if (findAdmin is not null)
             {
 
                 return ResponseFactory.Exists(model.Email);
@@ -35,7 +35,7 @@ public class AdminCrudService
 
             await _userManager.CreateAsync(body, model.Password);
             await _userManager.AddToRoleAsync(body, ADMIN_USER);
-            return ResponseFactory.Ok("New admin created {body.Email}",body.Email);
+            return ResponseFactory.Ok("New admin created {body.Email}", body.Email);
 
         }
         catch (Exception ex)
@@ -51,9 +51,9 @@ public class AdminCrudService
         try
         {
             var result = await _userManager.FindByEmailAsync(email);
-			
-			return result is null 
-                ? ResponseFactory.NotFound(email) 
+
+            return result is null
+                ? ResponseFactory.NotFound(email)
                 : ResponseFactory.Ok(AdminFactory.Create(result));
 
         }
@@ -61,8 +61,8 @@ public class AdminCrudService
         {
             _logger.LogError("<AdminCrudService> GetOneAdminAsync catched an error: {Exception}", ex.Message);
             return ResponseFactory.Error();
-			
-		}
+
+        }
     }
 
     public async Task<ResponseResult> GetAllAdmin()
@@ -89,7 +89,9 @@ public class AdminCrudService
                 adminModels.Add(AdminFactory.Create(admin, roles));
             }
 
-            return adminModels.Count > 0 ? ResponseFactory.Ok(adminModels) : ResponseFactory.NotFound();
+            return adminModels.Count > 0 
+                ? ResponseFactory.Ok(adminModels) 
+                : ResponseFactory.NotFound();
         }
         catch (Exception ex)
         {
@@ -98,23 +100,32 @@ public class AdminCrudService
         }
     }
 
-    public async Task<ResponseResult> UpdateAdminAsync(RegisterAdmin model)
+    public async Task<ResponseResult> UpdateAdminAsync(UpdateAdmin model)
     {
-        // TODO Emma
         try
         {
-            var findAdmin = await _userManager.FindByEmailAsync(model.Email);  //Kollar om mejl finns
-			
-			if (findAdmin is null)
+            // Kontrollerar att användaren faktiskt existerar i databasen. 
+            var admin = await _userManager.FindByEmailAsync(model.Email);
+            if (admin is null)
             {
-                return ResponseFactory.NotFound(model.Email);
-
+                return ResponseFactory.NotFound($"No user with email: {model.Email} exists.");
             }
-			var body = AdminFactory.Create(model); //omvandlar registerAdmin till aplicationuser för att kunna updatera i usermanager
-			await _userManager.UpdateAsync(body);
-            
 
-			return ResponseFactory.Ok(AdminFactory.Create(body)); //Retunerar hel adminObjektet
+            // Mappar om UpdateAdmin till en ApplicationUser (entitet). 
+            var updateAdmin = AdminFactory.Update(admin, model);
+
+            // Updaterar med nya användaruppgifter.
+            // Identity hanterar att det inte sker en konflikt om det är den aktuella användaren som försöker uppdatera sin egen e-postadress.
+            // Skulle det däremot existera en annan användare med samma inskickade e-post, så kommer uppdateringen inte att lyckas.
+            var result = await _userManager.UpdateAsync(updateAdmin);
+
+            if (result.Succeeded)
+            {
+                // Mappar om ApplicationUser till en passande modell för att säkerställa att känsliga fält (som passwordHash) inte exponeras.
+                return ResponseFactory.Ok(AdminFactory.Create(updateAdmin)); //Retur utan känslig fält.
+            }
+
+            return ResponseFactory.InternalError();
         }
         catch (Exception ex)
         {
@@ -128,7 +139,7 @@ public class AdminCrudService
         try
         {
             var user = await _userManager.FindByEmailAsync(email);
-            if (user != null)
+            if (user is not null)
             {
                 await _userManager.DeleteAsync(user);
                 return true;
