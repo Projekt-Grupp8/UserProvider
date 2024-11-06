@@ -35,7 +35,7 @@ public class AdminCrudService
 
             await _userManager.CreateAsync(body, model.Password);
             await _userManager.AddToRoleAsync(body, ADMIN_USER);
-            return ResponseFactory.Ok("New admin created {body.Email}", body.Email);
+            return ResponseFactory.Ok(new { body.Email, message = "New admin created {body.Email}" });
 
         }
         catch (Exception ex)
@@ -54,7 +54,7 @@ public class AdminCrudService
 
             return result is null
                 ? ResponseFactory.NotFound(email)
-                : ResponseFactory.Ok(AdminFactory.Create(result));
+                : ResponseFactory.Ok( new {result = AdminFactory.Create(result)});
 
         }
         catch (Exception ex)
