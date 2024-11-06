@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services;
 
-public class UserService(UserManager<ApplicationUser> userManager, DataContext context, ILogger<UserService> logger, SignInManager<ApplicationUser> signInManager, IJwtService jwtService, ServiceBusHandler serviceBusHandler) : IUserService
+public class UserService(UserManager<ApplicationUser> userManager, DataContext context, ILogger<UserService> logger, SignInManager<ApplicationUser> signInManager, IJwtService jwtService, ServiceBusHandler serviceBusHandler, ITokenService tokenService)
 {
     private readonly ILogger<UserService> _logger = logger;
     private readonly DataContext _context = context;
@@ -17,6 +17,7 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
     private readonly IJwtService _jwtService = jwtService;
     private readonly ServiceBusHandler _serviceBusHandler = serviceBusHandler;
+    private readonly ITokenService _tokenService = tokenService;
 
     public async Task<ResponseResult> CreateUserAsync(SignUpUser model)
     {
@@ -75,7 +76,7 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
                 return ResponseFactory.Error();
             }
 
-            var token = await GenerateTokenAsync(user.Email);
+            var token = await _tokenService.GenerateTokenAsync(user.Email);
             if (token is null)
             {
                 return ResponseFactory.InternalError("Couldn't generate JWT token.");
@@ -89,25 +90,6 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
             _logger.LogError(ex, "<SignInUserAsync> Sign in failed.");
             return ResponseFactory.InternalError("Try catch");
         }
-    }
-
-    public async Task<string> GenerateTokenAsync(string email)
-    {
-        try
-        {
-            var existingUser = await _userManager.Users.SingleOrDefaultAsync(x => x.Email == email);
-            if (existingUser?.Email is not null)
-            {
-                var token = _jwtService.GetToken(existingUser.Email);
-                return token;
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "<GenerateTokenAsync> Failed generating token.");
-            return null!;
-        }
-        return null!;
     }
 
     public async Task<bool> IsUserVerifiedAsync(string email)
@@ -130,8 +112,8 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
         {
             var userList = await _userManager.Users.ToListAsync();
             var users = UserFactory.Create(userList);
-            return users.Count > 0 
-                ? ResponseFactory.Ok(users) 
+            return users.Count > 0
+                ? ResponseFactory.Ok(users)
                 : ResponseFactory.NotFound("No users found");
         }
         catch (Exception)

@@ -52,7 +52,6 @@ public class AdminCrudController : ControllerBase
         }
 
         return BadRequest();
-
     }
 
     [HttpGet]

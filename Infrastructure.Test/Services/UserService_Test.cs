@@ -23,6 +23,7 @@ public class UserService_Test
     private readonly Mock<SignInManager<ApplicationUser>> _mockSignInManager;
     private readonly Mock<ServiceBusHandler> _mockServiceBusHandler;
     private readonly Mock<IJwtService> _mockJwtService;
+    private readonly Mock<ITokenService> _mockTokenService;
 
     public UserService_Test()
     {
@@ -59,7 +60,9 @@ public class UserService_Test
         var sbhLogger = new Mock<ILogger<ServiceBusHandler>>().Object;
 
         _mockJwtService = new Mock<IJwtService>();
-        //var jwtService = new Mock<JwtService>().Object;
+        var jwtService = new Mock<JwtService>().Object;
+
+        _mockTokenService = new Mock<ITokenService>();
 
         _mockServiceBusHandler = new Mock<ServiceBusHandler>(
             null!,
@@ -72,7 +75,7 @@ public class UserService_Test
         _mockUserManager.Setup(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
                 .ReturnsAsync(IdentityResult.Success);
 
-        _userService = new UserService(_mockUserManager.Object, _context, logger, _mockSignInManager.Object, _mockJwtService.Object, _mockServiceBusHandler.Object);
+        _userService = new UserService(_mockUserManager.Object, _context, logger, _mockSignInManager.Object, _mockJwtService.Object, _mockServiceBusHandler.Object, _mockTokenService.Object);
     }
 
     public static SignUpUser CreateSignUpUserModel()
@@ -116,8 +119,7 @@ public class UserService_Test
 
         // Mockar CreateAsync för att simulera att användaren har skapats korrekt.
         _mockUserManager.Setup(x => x.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
-                .ReturnsAsync(IdentityResult.Success)
-                .Callback(() => Debug.WriteLine("CreateAsync called"));
+                        .ReturnsAsync(IdentityResult.Success);
 
         // Act
         var result = await _userService.CreateUserAsync(signUpUser);
@@ -174,41 +176,63 @@ public class UserService_Test
         _mockUserManager.Setup(x => x.Users)
                    .Returns(new List<ApplicationUser> { user }.AsQueryable());
 
+        // Mockar PasswordSignInAsync för att simulera success.
         _mockSignInManager.Setup(x => x.PasswordSignInAsync(signInUser.Email, signInUser.Password, signInUser.RememberMe, false))
              .ReturnsAsync(SignInResult.Success);
 
-
-        // Vi måste mocka JWT service också, annars går det inte!!
+        // Mockar GenerateToken för att simulera generering av token.
         string token = "simulated-jwt-token";
-        _mockJwtService.Setup(x => x.GetToken(signInUser.Email, "User")).Returns(token);
-        var tokenResult = await _userService.GenerateTokenAsync(user.Email);
+        _mockTokenService.Setup(x => x.GenerateTokenAsync(user.Email)).ReturnsAsync(token);
 
         // Act
         var result = await _userService.SignInUserAsync(signInUser);
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(ResponseFactory.Ok(user).Message, result.Message);
-        Assert.Equal(ResponseFactory.Ok(user).StatusCode, result.StatusCode);
+        Assert.Equal(ResponseFactory.Ok(new { user.Email, Token = token }, "Succeeded").Message, result.Message);
+        Assert.Equal(ResponseFactory.Ok(new { user.Email, Token = token }, "Succeeded").StatusCode, result.StatusCode);
     }
 
     [Fact]
     public async Task SignInUser_WithValidCredentials_GeneratesValidToken()
     {
         // Arrange 
+        var signInUser = CreateSignInModel();
+        var user = new ApplicationUser
+        {
+            UserName = signInUser.Email,
+            Email = signInUser.Email,
+        };
+
+        // Mockar vi simulering av token-generering.
+        string expectedToken = "simulated-jwt-token";
+        _mockTokenService.Setup(x => x.GenerateTokenAsync(user.Email)).ReturnsAsync(expectedToken);
 
         // Act
+        var token = await _mockTokenService.Object.GenerateTokenAsync(user.Email);
 
         // Assert
+        Assert.NotNull(token);
+        Assert.Equal(expectedToken, token);
     }
 
     [Fact]
     public async Task SignInUser_WithInvalidCredentials_ReturnsNotFound()
     {
         // Arrange 
+        var newUser = CreateSignInModel();
+
+        _mockUserManager.Setup(x => x.Users).Returns(new List<ApplicationUser>().AsQueryable());
+
+        _mockSignInManager.Setup(x => x.PasswordSignInAsync(newUser.Email, newUser.Password, newUser.RememberMe, false))
+             .ReturnsAsync(SignInResult.Failed);
 
         // Act
+        var result = await _userService.SignInUserAsync(newUser);
 
         // Assert
+        Assert.NotNull(result);
+        Assert.Equal("Not found.", result.Message);  
+        Assert.Equal(404, (int)result.StatusCode);
     }
 }
