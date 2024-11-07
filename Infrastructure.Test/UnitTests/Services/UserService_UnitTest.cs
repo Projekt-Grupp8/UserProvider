@@ -6,6 +6,7 @@ using Infrastructure.Factories;
 using Infrastructure.Models;
 using Infrastructure.Services;
 using Infrastructure.Services.Interface;
+using Infrastructure.Test.TestHelper;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -20,59 +21,28 @@ public class UserService_UnitTest : IDisposable
     private readonly DataContext _context;
     private readonly Mock<UserManager<ApplicationUser>> _mockUserManager;
     private readonly Mock<SignInManager<ApplicationUser>> _mockSignInManager;
-    private readonly Mock<ServiceBusHandler> _mockServiceBusHandler;
+    private readonly Mock<IServiceBusHandler> _mockServiceBusHandler;
     private readonly Mock<IJwtService> _mockJwtService;
-    private readonly Mock<ResponseFactory> _mockResponseFactory;
-    private readonly Mock<UserFactory> _mockUserFactory;
+    private readonly Mock<ILogger<UserService>> _mockLogger;
+
+
 
     public UserService_UnitTest()
     {
-        // Mockar en InMemory-databas
-        var options = new DbContextOptionsBuilder<DataContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
-                .Options;
+        _context = TestHelper.CreateInMemoryDbContext();
+        _mockUserManager = TestHelper.CreateMockUserManager();
+        _mockSignInManager = TestHelper.CreateMockSignInManager(_mockUserManager);
 
-        _context = new DataContext(options);
+        _mockLogger = new Mock<ILogger<UserService>>();
 
-        // Mockar UserManager med alla dess beroenden.
-        _mockUserManager = new Mock<UserManager<ApplicationUser>>(
-            new Mock<IUserStore<ApplicationUser>>().Object,
-            new Mock<IOptions<IdentityOptions>>().Object,
-            new Mock<IPasswordHasher<ApplicationUser>>().Object,
-            new IUserValidator<ApplicationUser>[0],
-            new IPasswordValidator<ApplicationUser>[0],
-            new UpperInvariantLookupNormalizer(),
-            new IdentityErrorDescriber(),
-            null!,
-            new Mock<ILogger<UserManager<ApplicationUser>>>().Object);
-
-        // Mockar SignInManager med alla dess beroenden.
-        _mockSignInManager = new Mock<SignInManager<ApplicationUser>>(
-            _mockUserManager.Object,
-            new Mock<IHttpContextAccessor>().Object,
-            new Mock<IUserClaimsPrincipalFactory<ApplicationUser>>().Object,
-            new Mock<IOptions<IdentityOptions>>().Object,
-            new Mock<ILogger<SignInManager<ApplicationUser>>>().Object,
-            new Mock<IAuthenticationSchemeProvider>().Object,
-            new Mock<IUserConfirmation<ApplicationUser>>().Object);
-
-        var logger = new Mock<ILogger<UserService>>().Object;
-        var sbhLogger = new Mock<ILogger<ServiceBusHandler>>().Object;
         _mockJwtService = new Mock<IJwtService>();
-        _mockResponseFactory = new Mock<ResponseFactory>();
-        _mockUserFactory = new Mock<UserFactory>();
-        _mockServiceBusHandler = new Mock<ServiceBusHandler>(
-            null!,
-            sbhLogger,
-            null!,
-            null!
-            );
+        _mockServiceBusHandler = new Mock<IServiceBusHandler>();
 
         // Mockar AddToRoleAsync för att simulera att roll satts korrekt.
         _mockUserManager.Setup(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
                 .ReturnsAsync(IdentityResult.Success);
 
-        _userService = new UserService(_mockUserManager.Object, _context, logger, _mockSignInManager.Object, _mockJwtService.Object, _mockServiceBusHandler.Object);
+        _userService = new UserService(_mockUserManager.Object, _context, _mockLogger.Object, _mockSignInManager.Object, _mockJwtService.Object, _mockServiceBusHandler.Object);
     }
 
     public static SignUpUser CreateSignUpUserModel()

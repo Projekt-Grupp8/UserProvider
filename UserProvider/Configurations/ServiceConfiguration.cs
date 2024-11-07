@@ -42,9 +42,8 @@ public static class ServiceConfiguration
         services.AddScoped<UserService>();
         services.AddScoped<AdminService>();
         services.AddScoped<AdminCrudService>();
-        services.AddScoped<ServiceBusHandler>();
+        services.AddScoped<IServiceBusHandler ,ServiceBusHandler>();
         services.AddScoped<IJwtService, JwtService>();
-        //services.AddScoped<ITokenService, TokenService>();
         services.AddSingleton<EmailService>();
     }
 }

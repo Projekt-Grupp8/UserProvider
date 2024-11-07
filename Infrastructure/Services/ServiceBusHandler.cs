@@ -3,6 +3,7 @@ using Azure.Messaging.ServiceBus;
 using Infrastructure.Entities;
 using Infrastructure.Factories;
 using Infrastructure.Models;
+using Infrastructure.Services.Interface;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -13,14 +14,14 @@ using System.Net.Http.Json;
 
 namespace Infrastructure.Services;
 
-public class ServiceBusHandler
+public class ServiceBusHandler : IServiceBusHandler
 {
     private readonly IConfiguration _configuration;
     private readonly ILogger<ServiceBusHandler> _logger;
     private readonly HttpClient _httpClient;
     private readonly UserManager<ApplicationUser> _userManager;
 
-    public ServiceBusHandler() : this(null!, null!, null!, null!) { }
+    //public ServiceBusHandler() : this(null!, null!, null!, null!) { }
 
     public ServiceBusHandler(IConfiguration configuration, ILogger<ServiceBusHandler> logger, HttpClient httpClient, UserManager<ApplicationUser> userManager)
     {
