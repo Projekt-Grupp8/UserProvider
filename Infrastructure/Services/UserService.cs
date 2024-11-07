@@ -112,9 +112,14 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
         {
             var userList = await _userManager.Users.ToListAsync();
             var users = UserFactory.Create(userList);
-            return users.Count > 0
-                ? ResponseFactory.Ok(users)
-                : ResponseFactory.NotFound("No users found");
+            if (users != null)
+            {
+                return ResponseFactory.Ok(users);
+                //return users.Count > 0
+                //    ? ResponseFactory.Ok(users)
+                //    : ResponseFactory.NotFound("No users found");
+            }
+            return ResponseFactory.NotFound();
         }
         catch (Exception)
         {

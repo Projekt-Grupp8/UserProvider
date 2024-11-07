@@ -2,13 +2,14 @@
 using Infrastructure.Models;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.RegularExpressions;
 
 
 namespace UserProvider.Controllers;
 
 [ApiController]
 //[Authorize(Policy = "AuthenticatedAdmins")]
-public class AdminCrudController : ControllerBase
+public partial class AdminCrudController : ControllerBase
 {
     private readonly AdminCrudService _adminCrudService;
     private readonly ILogger<AdminCrudController> _logger;
@@ -39,19 +40,18 @@ public class AdminCrudController : ControllerBase
     [Route("/getadminbyemail")]
     public async Task<IActionResult> GetOneAdmin([FromQuery] string email)
     {
-        if (ModelState.IsValid)
+        if (string.IsNullOrEmpty(email) || !MyRegex().IsMatch(email))
         {
-
-            var getAdmin = await _adminCrudService.GetOneAdminAsync(email);
-            if (getAdmin.ContentResult is not null)
-            {
-                return Ok(getAdmin.ContentResult);
-            }
-
-            return NotFound($"{email} not found.");
+            return BadRequest("Invalid email format.");
         }
 
-        return BadRequest();
+        var getAdmin = await _adminCrudService.GetOneAdminAsync(email);
+        if (getAdmin.ContentResult is not null)
+        {
+            return Ok(getAdmin.ContentResult);
+        }
+
+        return NotFound($"{email} not found.");
     }
 
     [HttpGet]
@@ -93,8 +93,13 @@ public class AdminCrudController : ControllerBase
 
     [HttpDelete]
     [Route("/deleteadmin")]
-    public async Task<IActionResult> DeleteAdmin([FromQuery]string email)
+    public async Task<IActionResult> DeleteAdmin([FromQuery] string email)
     {
+        if (string.IsNullOrEmpty(email) || !MyRegex().IsMatch(email))
+        {
+            return BadRequest("Invalid email format.");
+        }
+
         try
         {
             var deleted = await _adminCrudService.DeleteAdminAsync(email);
@@ -111,4 +116,7 @@ public class AdminCrudController : ControllerBase
             return StatusCode(500, "An unexpected error occurred.");
         }
     }
+
+    [GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$")]
+    private static partial Regex MyRegex();
 }

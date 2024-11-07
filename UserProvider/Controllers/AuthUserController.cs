@@ -37,7 +37,7 @@ public class AuthUserController(UserManager<ApplicationUser> userManager, UserSe
                 ResponseStatusCode.OK => Created("Registration succeeded", new { status = "success", email = model.Email }),
                 ResponseStatusCode.EXISTS => Conflict(new { status = "error", message = "The user with this e-mail address already exists" }),
                 ResponseStatusCode.ERROR => BadRequest(new { status = "error", message = "Please provide all required information" }),
-                _ => StatusCode(StatusCodes.Status500InternalServerError, new { status = "error", message = "An unexpected internal error occurred. Please try again later." })
+                _ => StatusCode(500, new { status = "error", message = "An unexpected internal error occurred. Please try again later." })
             };
         }
         catch (Exception ex)
@@ -62,7 +62,7 @@ public class AuthUserController(UserManager<ApplicationUser> userManager, UserSe
         catch (Exception ex)
         {
             _logger.LogError(ex, "<VerifyUser> :: Registration failed due to an internal error: {StatusCode}", StatusCodes.Status500InternalServerError);
-            return StatusCode(StatusCodes.Status500InternalServerError, "Registration failed due to an internal error");
+            return StatusCode(500, "Registration failed due to an internal error");
         }
     }
 
@@ -76,7 +76,7 @@ public class AuthUserController(UserManager<ApplicationUser> userManager, UserSe
 
         if (!await _userService.IsUserVerifiedAsync(model.Email))
         {
-            return Unauthorized(new { message = "User account not verified." });
+            return Unauthorized(new { message = "User account not verified.", isVerified = false });
         }
 
         try
@@ -87,7 +87,7 @@ public class AuthUserController(UserManager<ApplicationUser> userManager, UserSe
                 ResponseStatusCode.OK => Ok(new { status = "success", data = result }),
                 ResponseStatusCode.EXISTS => Conflict(new { status = "error", message = "No user found with this e-mail address" }),
                 ResponseStatusCode.UNAUTHORIZED => BadRequest(new { status = "error", message = "Invalid credentials. Please check your input." }),
-                _ => StatusCode(StatusCodes.Status500InternalServerError, new { status = "error", message = "An unexpected internal error occurred. Please try again later." })
+                _ => StatusCode(500, new { status = "error", message = "An unexpected internal error occurred. Please try again later." })
             };
         }
         catch (Exception ex)
@@ -112,7 +112,7 @@ public class AuthUserController(UserManager<ApplicationUser> userManager, UserSe
         catch (Exception ex)
         {
             _logger.LogError(ex, "<LogOut> :: Sign out failed due to an internal error: {StatusCode}", StatusCodes.Status500InternalServerError);
-            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            return StatusCode(500, ex.Message);
         }
     }
 

@@ -1,4 +1,4 @@
-﻿namespace Infrastructure.Test.Services;
+﻿namespace Infrastructure.Test.UnitTests.Services;
 
 using Infrastructure.Data;
 using Infrastructure.Entities;
@@ -13,9 +13,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using System.Diagnostics;
 
-public class UserService_Test
+public class UserService_UnitTest : IDisposable
 {
     private readonly UserService _userService;
     private readonly DataContext _context;
@@ -24,8 +23,10 @@ public class UserService_Test
     private readonly Mock<ServiceBusHandler> _mockServiceBusHandler;
     private readonly Mock<IJwtService> _mockJwtService;
     private readonly Mock<ITokenService> _mockTokenService;
+    private readonly Mock<ResponseFactory> _mockResponseFactory;
+    private readonly Mock<UserFactory> _mockUserFactory;
 
-    public UserService_Test()
+    public UserService_UnitTest()
     {
         // Mockar en InMemory-databas
         var options = new DbContextOptionsBuilder<DataContext>()
@@ -58,12 +59,11 @@ public class UserService_Test
 
         var logger = new Mock<ILogger<UserService>>().Object;
         var sbhLogger = new Mock<ILogger<ServiceBusHandler>>().Object;
-
-        _mockJwtService = new Mock<IJwtService>();
         var jwtService = new Mock<JwtService>().Object;
-
+        _mockJwtService = new Mock<IJwtService>();
         _mockTokenService = new Mock<ITokenService>();
-
+        _mockResponseFactory = new Mock<ResponseFactory>();
+        _mockUserFactory = new Mock<UserFactory>();
         _mockServiceBusHandler = new Mock<ServiceBusHandler>(
             null!,
             sbhLogger,
@@ -232,7 +232,79 @@ public class UserService_Test
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Not found.", result.Message);  
+        Assert.Equal("Not found.", result.Message);
         Assert.Equal(404, (int)result.StatusCode);
+    }
+
+    [Fact]
+    public async Task IsUserVerifiedAsync_VerifiesUserCodeCorrectly_Returns_True()
+    {
+        // Act
+        var user = CreateSignInModel();
+        _mockUserManager.Setup(x => x.FindByEmailAsync(user.Email)).ReturnsAsync(new ApplicationUser { Email = user.Email, IsVerified = true });
+
+        // Arrange
+        var isVerified = await _userService.IsUserVerifiedAsync(user.Email);
+
+        // Assert
+        Assert.True(isVerified);
+    }
+
+    [Fact]
+    public async Task GetAllUsersAsync_ReturnListOfUsers()
+    {
+        // Arrange
+        var userList = new List<ApplicationUser>
+        {
+            new ApplicationUser { Email = "test@domain.com" },
+            new ApplicationUser { Email = "test2@domain.com" }
+        };
+
+        await _context.Users.AddRangeAsync(userList);
+        await _context.SaveChangesAsync();
+
+        _mockUserManager.Setup(x => x.Users).Returns(_context.Users.AsQueryable());
+
+        // Act
+        var result = await _userService.GetAllUsersAsync();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.IsType<ResponseResult>(result);
+        Assert.NotNull(result.ContentResult);
+        Assert.Equal(StatusCode.OK, result.StatusCode);
+
+        var contentResult = result.ContentResult as List<User>;
+        Assert.NotNull(contentResult); 
+        Assert.Contains(contentResult, user => user.Email == "test@domain.com");
+        Assert.Contains(contentResult, user => user.Email == "test2@domain.com");
+    }
+
+    [Fact]
+    public async Task GetAllUsersAsync_ReturnNotFound_WhenListIsEmpty()
+    {
+        // Arrange
+        // Skapar en tom lista av ApplicationUser
+        var users = new List<ApplicationUser>();
+
+        // Sparar den tomma listan i InMemory-databasen
+        await _context.Users.AddRangeAsync(users);
+        await _context.SaveChangesAsync();
+
+        // Mockar att UserManager returernar den tomma listan från databasen
+        _mockUserManager.Setup(x => x.Users).Returns(_context.Users.AsQueryable());
+
+        // Act
+        var result = await _userService.GetAllUsersAsync();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(ResponseFactory.NotFound().Message, result.Message);
+    }
+
+    void IDisposable.Dispose()
+    {
+        _context.Database.EnsureDeleted(); 
+        _context.Dispose(); 
     }
 }

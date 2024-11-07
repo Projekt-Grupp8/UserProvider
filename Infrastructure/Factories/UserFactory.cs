@@ -30,11 +30,23 @@ public class UserFactory
 
     public static List<User> Create(List<ApplicationUser> userList)
     {
-        return userList.Select(user => new User
+        try
         {
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            Email = user.Email,
-        }).ToList();
+            if (userList == null || userList.Count == 0)
+            {
+                return null!;
+            }
+
+            return userList.Select(user => new User
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+            }).ToList();
+        }
+        catch (Exception)
+        {
+            return null!;
+        }
     }
 }
