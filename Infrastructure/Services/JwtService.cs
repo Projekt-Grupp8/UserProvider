@@ -1,4 +1,7 @@
-﻿using Infrastructure.Services.Interface;
+﻿using Infrastructure.Entities;
+using Infrastructure.Services.Interface;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -10,20 +13,36 @@ namespace Infrastructure.Services;
 
 public class JwtService : IJwtService
 {
-    public JwtService(IConfiguration configuration, ILogger<JwtService> logger)
+    private readonly IConfiguration _configuration;
+    private readonly ILogger<JwtService> _logger;
+    private readonly UserManager<ApplicationUser> _userManager;
+
+    public JwtService(IConfiguration configuration, ILogger<JwtService> logger, UserManager<ApplicationUser> userManager)
     {
         _configuration = configuration;
         _logger = logger;
+        _userManager = userManager;
     }
 
-    public JwtService()
+
+    public async Task<string> GenerateTokenAsync(string email)
     {
-        _configuration = null!;
-        _logger = null!;
+        try
+        {
+            var existingUser = await _userManager.Users.SingleOrDefaultAsync(x => x.Email == email);
+            if (existingUser?.Email is not null)
+            {
+                var token = GetToken(existingUser.Email);
+                return token;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "<GenerateTokenAsync> Failed generating token.");
+            return null!;
+        }
+        return null!;
     }
-
-    private readonly IConfiguration _configuration;
-    private readonly ILogger<JwtService> _logger;
 
     public string GetToken(string email, string? role = null)
     {

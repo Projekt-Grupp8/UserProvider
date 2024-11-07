@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services;
 
-public class UserService(UserManager<ApplicationUser> userManager, DataContext context, ILogger<UserService> logger, SignInManager<ApplicationUser> signInManager, IJwtService jwtService, ServiceBusHandler serviceBusHandler, ITokenService tokenService)
+public class UserService(UserManager<ApplicationUser> userManager, DataContext context, ILogger<UserService> logger, SignInManager<ApplicationUser> signInManager, IJwtService jwtService, ServiceBusHandler serviceBusHandler)
 {
     private readonly ILogger<UserService> _logger = logger;
     private readonly DataContext _context = context;
@@ -17,7 +17,6 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
     private readonly IJwtService _jwtService = jwtService;
     private readonly ServiceBusHandler _serviceBusHandler = serviceBusHandler;
-    private readonly ITokenService _tokenService = tokenService;
 
     public async Task<ResponseResult> CreateUserAsync(SignUpUser model)
     {
@@ -76,7 +75,7 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
                 return ResponseFactory.Error();
             }
 
-            var token = await _tokenService.GenerateTokenAsync(user.Email);
+            var token = await _jwtService.GenerateTokenAsync(user.Email);
             if (token is null)
             {
                 return ResponseFactory.InternalError("Couldn't generate JWT token.");

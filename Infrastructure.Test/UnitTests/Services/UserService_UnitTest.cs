@@ -22,7 +22,6 @@ public class UserService_UnitTest : IDisposable
     private readonly Mock<SignInManager<ApplicationUser>> _mockSignInManager;
     private readonly Mock<ServiceBusHandler> _mockServiceBusHandler;
     private readonly Mock<IJwtService> _mockJwtService;
-    private readonly Mock<ITokenService> _mockTokenService;
     private readonly Mock<ResponseFactory> _mockResponseFactory;
     private readonly Mock<UserFactory> _mockUserFactory;
 
@@ -59,9 +58,7 @@ public class UserService_UnitTest : IDisposable
 
         var logger = new Mock<ILogger<UserService>>().Object;
         var sbhLogger = new Mock<ILogger<ServiceBusHandler>>().Object;
-        var jwtService = new Mock<JwtService>().Object;
         _mockJwtService = new Mock<IJwtService>();
-        _mockTokenService = new Mock<ITokenService>();
         _mockResponseFactory = new Mock<ResponseFactory>();
         _mockUserFactory = new Mock<UserFactory>();
         _mockServiceBusHandler = new Mock<ServiceBusHandler>(
@@ -75,7 +72,7 @@ public class UserService_UnitTest : IDisposable
         _mockUserManager.Setup(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
                 .ReturnsAsync(IdentityResult.Success);
 
-        _userService = new UserService(_mockUserManager.Object, _context, logger, _mockSignInManager.Object, _mockJwtService.Object, _mockServiceBusHandler.Object, _mockTokenService.Object);
+        _userService = new UserService(_mockUserManager.Object, _context, logger, _mockSignInManager.Object, _mockJwtService.Object, _mockServiceBusHandler.Object);
     }
 
     public static SignUpUser CreateSignUpUserModel()
@@ -182,7 +179,7 @@ public class UserService_UnitTest : IDisposable
 
         // Mockar GenerateToken för att simulera generering av token.
         string token = "simulated-jwt-token";
-        _mockTokenService.Setup(x => x.GenerateTokenAsync(user.Email)).ReturnsAsync(token);
+        _mockJwtService.Setup(x => x.GenerateTokenAsync(user.Email)).ReturnsAsync(token);
 
         // Act
         var result = await _userService.SignInUserAsync(signInUser);
@@ -206,10 +203,10 @@ public class UserService_UnitTest : IDisposable
 
         // Mockar vi simulering av token-generering.
         string expectedToken = "simulated-jwt-token";
-        _mockTokenService.Setup(x => x.GenerateTokenAsync(user.Email)).ReturnsAsync(expectedToken);
+        _mockJwtService.Setup(x => x.GenerateTokenAsync(user.Email)).ReturnsAsync(expectedToken);
 
         // Act
-        var token = await _mockTokenService.Object.GenerateTokenAsync(user.Email);
+        var token = await _mockJwtService.Object.GenerateTokenAsync(user.Email);
 
         // Assert
         Assert.NotNull(token);
@@ -237,7 +234,7 @@ public class UserService_UnitTest : IDisposable
     }
 
     [Fact]
-    public async Task IsUserVerifiedAsync_VerifiesUserCodeCorrectly_Returns_True()
+    public async Task IsUserVerifiedAsync_VerifiesUserCodeCorrectly_ReturnsTrue()
     {
         // Act
         var user = CreateSignInModel();
@@ -248,6 +245,19 @@ public class UserService_UnitTest : IDisposable
 
         // Assert
         Assert.True(isVerified);
+    }
+
+    [Fact]
+    public async Task IsUserVerifiedAsync_VerifiesUserCodeCorrectly_ReturnsFalse()
+    {
+        // Act
+        var user = CreateSignInModel();
+
+        // Arrange
+        var isVerified = await _userService.IsUserVerifiedAsync(user.Email);
+
+        // Assert
+        Assert.False(isVerified);
     }
 
     [Fact]
