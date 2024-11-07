@@ -74,7 +74,7 @@ public partial class AdminCrudController : ControllerBase
         }
     }
 
-    [HttpPost]
+    [HttpPut]
     [Route("/updateadmin")]
     public async Task<IActionResult> UpdateAdmin(UpdateAdmin model)
     {

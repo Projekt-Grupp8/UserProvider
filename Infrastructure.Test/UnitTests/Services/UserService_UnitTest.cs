@@ -245,6 +245,11 @@ public class UserService_UnitTest : IDisposable
 
         _mockUserManager.Setup(x => x.Users).Returns(_context.Users.AsQueryable());
 
+        foreach (var user in userList)
+        {
+            _mockUserManager.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(new List<string> { "User" });
+        }
+
         // Act
         var result = await _userService.GetAllUsersAsync();
 
@@ -265,21 +270,26 @@ public class UserService_UnitTest : IDisposable
     {
         // Arrange
         // Skapar en tom lista av ApplicationUser
-        var users = new List<ApplicationUser>();
+        var userList = new List<ApplicationUser>();
 
         // Sparar den tomma listan i InMemory-databasen
-        await _context.Users.AddRangeAsync(users);
+        await _context.Users.AddRangeAsync(userList);
         await _context.SaveChangesAsync();
 
         // Mockar att UserManager returernar den tomma listan från databasen
         _mockUserManager.Setup(x => x.Users).Returns(_context.Users.AsQueryable());
+
+        foreach (var user in userList)
+        {
+            _mockUserManager.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(new List<string> { "User" });
+        }
 
         // Act
         var result = await _userService.GetAllUsersAsync();
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(ResponseFactory.NotFound().Message, result.Message);
+        Assert.Equal("No users available", result.Message);
     }
 
     void IDisposable.Dispose()

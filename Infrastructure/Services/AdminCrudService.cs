@@ -138,10 +138,10 @@ public class AdminCrudService
     {
         try
         {
-            var user = await _userManager.FindByEmailAsync(email);
-            if (user is not null)
+            var admin = await _userManager.FindByEmailAsync(email);
+            if (admin is not null)
             {
-                await _userManager.DeleteAsync(user);
+                await _userManager.DeleteAsync(admin);
                 return true;
             }
 
