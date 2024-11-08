@@ -30,11 +30,6 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
             }
 
             var user = UserFactory.Create(model);
-            if (user == null)
-            {
-                return ResponseFactory.InternalError("Mapping failed.");
-            }
-
             var result = await _userManager.CreateAsync(user, model.Password);
 
             if (!result.Succeeded)
@@ -43,11 +38,13 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
             }
 
             var roleResult = await _userManager.AddToRoleAsync(user, STANDARD_ROLE);
-            await _serviceBusHandler.SendServiceBusMessageAsync(model.Email);
+
             if (!roleResult.Succeeded)
             {
                 return ResponseFactory.InternalError("Adding role failed.");
             }
+
+            await _serviceBusHandler.SendServiceBusMessageAsync(model.Email);
 
             return ResponseFactory.Ok(user);
         }
@@ -100,7 +97,7 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "<IsUserVerifiedAsync> Couldn't verify user.");
+            _logger.LogError("< UserService > IsUserVerifiedAsync catched an error: {Exception}", ex.Message);
             return false;
         }
     }
@@ -128,11 +125,12 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
                 return ResponseFactory.Ok(users);
 
             }
+
             return ResponseFactory.NotFound("No users available");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            _logger.LogError("<GetAllUsersAsync> Couldn't get all users");
+            _logger.LogError("<UserService> GetAllUsersAsync catched an error: {Exception}", ex.Message);
             return ResponseFactory.InternalError();
         }
     }
@@ -166,7 +164,7 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
         }
         catch (Exception ex)
         {
-            _logger.LogError("<AdminCrudService> UpdateUserAsync catched an error: {Exception}", ex.Message);
+            _logger.LogError("<UserService> UpdateUserAsync catched an error: {Exception}", ex.Message);
             return null!;
         }
     }
@@ -192,7 +190,7 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
         }
         catch (Exception ex)
         {
-            _logger.LogError("<AdminCrudService> DeleteAdminAsync catched an error: {Exception}", ex.Message);
+            _logger.LogError("<UserService> DeleteUserAsync catched an error: {Exception}", ex.Message);
             return false;
         }
     }
