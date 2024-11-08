@@ -107,21 +107,10 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
         try
         {
             var user = await _userManager.FindByEmailAsync(email);
+            if (user == null) return ResponseFactory.NotFound();
 
-            if (user == null) 
-            {
-                return ResponseFactory.NotFound();
-            }
-
-            var hasUserRole = await _userManager.GetRolesAsync(user);
-            if (hasUserRole.Contains("User"))
-            {
-                return ResponseFactory.Ok(user);
-            }
-            else
-            {
-                return ResponseFactory.Unauthorized();
-            }
+            var hasUserRole = (await _userManager.GetRolesAsync(user)).Contains("User");
+            return hasUserRole ? ResponseFactory.Ok(user) : ResponseFactory.Unauthorized();
         }
         catch (Exception ex)
         {

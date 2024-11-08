@@ -1,7 +1,8 @@
 ﻿using Azure;
+using Infrastructure.Factories;
 using Infrastructure.Models;
 using Infrastructure.Services;
-using Microsoft.AspNetCore.Http.HttpResults;
+using ResponseStatusCode = Infrastructure.Models.StatusCode;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.RegularExpressions;
 
@@ -15,6 +16,25 @@ public partial class UserController : ControllerBase
     public UserController(UserService userService)
     {
         _userService = userService;
+    }
+
+    [HttpGet]
+    [Route("/getoneuser")]
+    public async Task<IActionResult> GetOneUser([FromQuery] string email)
+    {
+        if (string.IsNullOrEmpty(email) || !MyRegex().IsMatch(email))
+        {
+            return BadRequest("Invalid email format.");
+        }
+
+        var result = await _userService.GetOneUserAsync(email);
+        return result.StatusCode switch
+        {
+            ResponseStatusCode.OK => Ok(new { status = "success", message = "User found", email = email }),
+            ResponseStatusCode.UNAUTHORIZED => Unauthorized(new { status = "error", message = "User does not have the correct role or does not exist" }),
+            ResponseStatusCode.NOT_FOUND => NotFound(new { status = "error", message = "User not found" }),
+            _ => StatusCode(500, new { status = "error", message = "An unexpected internal error occurred. Please try again later." })
+        };
     }
 
     [HttpGet]
@@ -50,7 +70,7 @@ public partial class UserController : ControllerBase
 
     [HttpDelete]
     [Route("/deleteuser")]
-    public async Task<IActionResult> DeleteUser([FromQuery]string email)
+    public async Task<IActionResult> DeleteUser([FromQuery] string email)
     {
         if (string.IsNullOrEmpty(email) || !MyRegex().IsMatch(email))
         {
