@@ -7,12 +7,8 @@ using Infrastructure.Models;
 using Infrastructure.Services;
 using Infrastructure.Services.Interface;
 using Infrastructure.Test.TestHelper;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Moq;
 
 public class UserService_UnitTest : IDisposable
@@ -24,7 +20,6 @@ public class UserService_UnitTest : IDisposable
     private readonly Mock<IServiceBusHandler> _mockServiceBusHandler;
     private readonly Mock<IJwtService> _mockJwtService;
     private readonly Mock<ILogger<UserService>> _mockLogger;
-
 
 
     public UserService_UnitTest()
@@ -171,7 +166,7 @@ public class UserService_UnitTest : IDisposable
             Email = signInUser.Email,
         };
 
-        // Mockar vi simulering av token-generering.
+        // Mockar simulering av token-generering.
         string expectedToken = "simulated-jwt-token";
         _mockJwtService.Setup(x => x.GenerateTokenAsync(user.Email)).ReturnsAsync(expectedToken);
 
@@ -276,13 +271,101 @@ public class UserService_UnitTest : IDisposable
         _mockUserManager.Setup(x => x.GetUsersInRoleAsync("User"))
                         .ReturnsAsync(userList);
 
-
         // Act
         var result = await _userService.GetAllUsersAsync();
 
         // Assert
         Assert.NotNull(result);
         Assert.Equal("No users available", result.Message);
+    }
+
+    [Fact]
+    public async Task GetOneUSerAsync_ReturnsUser_GivenCorrectEmail()
+    {
+        // Arrange
+        string email = "simulated@email.com";
+        var user = new ApplicationUser
+        {
+            Email = email,
+            UserName = email,
+        };
+
+        // Mockar att användaren existerar.
+        _mockUserManager.Setup(x => x.FindByEmailAsync(email)).ReturnsAsync(user);
+        // Mockar att användaren har rollen "User".
+        _mockUserManager.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(new List<string> { "User" });
+
+        // Act
+        var result = await _userService.GetOneUserAsync(email);
+
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(StatusCode.OK, result.StatusCode);
+
+        var userResult = Assert.IsType<ApplicationUser>(result.ContentResult);
+        Assert.Equal(email, userResult.Email);
+    }
+
+    [Fact]
+    public async Task GetOneUSerAsync_ReturnsNotFound_GivenUserDoesntExist()
+    {
+        // Arrange
+        string email = "simulated@email.com";
+        var user = new ApplicationUser
+        {
+            Email = email,
+            UserName = email,
+        };
+
+        // Mockar att användaren inte existerar.
+        _mockUserManager.Setup(x => x.FindByEmailAsync(email)).ReturnsAsync((ApplicationUser)null);
+
+        // Act
+        var result = await _userService.GetOneUserAsync(email);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(StatusCode.NOT_FOUND, result.StatusCode);
+        Assert.Equal("No user found", result.Message);
+    }
+
+    [Fact]
+    public async Task UpdateUserAsync_UpdatesUser_GivenCorrectUserModel()
+    {
+        var userModel = new User
+        {
+            FirstName = "UpdateName",
+            LastName = "UpdateName",
+            Email = "UpdateSimulated@email.com"
+        };
+
+        var userEntity = new ApplicationUser
+        {
+            FirstName = "Test",
+            LastName = "Test",
+            Email = "simulated@email.com"
+        };
+
+        _mockUserManager.Setup(x => x.FindByEmailAsync(userModel.Email))
+                    .ReturnsAsync(userEntity);
+
+        _mockUserManager.Setup(x => x.GetRolesAsync(It.IsAny<ApplicationUser>()))
+                    .ReturnsAsync(new List<string>());
+
+        _mockUserManager.Setup(x => x.UpdateAsync(userEntity))
+                    .ReturnsAsync(IdentityResult.Success);
+
+        // Act
+        var result = await _userService.UpdateUserAsync(userModel);
+
+        // Assert
+        Assert.NotNull(result); 
+        var userResult = Assert.IsType<User>(result.ContentResult); 
+        Assert.Equal(userModel.Email, userResult.Email);
+        Assert.Equal(userModel.FirstName, userResult.FirstName);
+        Assert.Equal(userModel.LastName, userResult.LastName);
+
     }
 
     void IDisposable.Dispose()

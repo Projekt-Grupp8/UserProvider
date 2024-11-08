@@ -5,7 +5,6 @@ using Infrastructure.Models;
 using Infrastructure.Services.Interface;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services;
@@ -107,7 +106,7 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
         try
         {
             var user = await _userManager.FindByEmailAsync(email);
-            if (user == null) return ResponseFactory.NotFound();
+            if (user == null) return ResponseFactory.NotFound("No user found");
 
             var hasUserRole = (await _userManager.GetRolesAsync(user)).Contains("User");
             return hasUserRole ? ResponseFactory.Ok(user) : ResponseFactory.Unauthorized();
@@ -123,6 +122,7 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
     {
         try
         {
+            // Hämtar alla användare med rollen users
             var userRoleUsers = await _userManager.GetUsersInRoleAsync("User");
             var users = UserFactory.Create(userRoleUsers);
 
@@ -151,6 +151,7 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
                 return ResponseFactory.NotFound($"No user with email: {model.Email} exists.");
             }
 
+            // Kontrollerar om användaren är SuperUser eller Admin, returnerar Unauthorized. 
             var roles = await _userManager.GetRolesAsync(user);
             if (roles.Contains("SuperUser") || roles.Contains("Admin"))
             {
