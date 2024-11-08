@@ -28,6 +28,16 @@ public class UserFactory
             };
     }
 
+    public static List<User> Create(IEnumerable<ApplicationUser> users)
+    {
+        return users?.Select(user => new User
+        {
+            Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+        }).ToList() ?? new List<User>();
+    }
+
     public static List<User> Create(List<ApplicationUser> userList)
     {
         try

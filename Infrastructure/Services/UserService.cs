@@ -102,28 +102,44 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
         }
     }
 
+    public async Task<ResponseResult> GetOneUserAsync(string email)
+    {
+        try
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null) 
+            {
+                return ResponseFactory.NotFound();
+            }
+
+            var hasUserRole = await _userManager.GetRolesAsync(user);
+            if (hasUserRole.Contains("User"))
+            {
+                return ResponseFactory.Ok(user);
+            }
+            else
+            {
+                return ResponseFactory.Unauthorized();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("<UserService> GetOneUserAsync catched an error: {Exception}", ex.Message);
+            return ResponseFactory.InternalError();
+        }
+    }
+
     public async Task<ResponseResult> GetAllUsersAsync()
     {
         try
         {
-            var userList = await _userManager.Users.ToListAsync();
+            var userRoleUsers = await _userManager.GetUsersInRoleAsync("User");
+            var users = UserFactory.Create(userRoleUsers);
 
-            var filteredList = new List<ApplicationUser>();
-
-            foreach (var user in userList)
-            {
-                var roles = await _userManager.GetRolesAsync(user);
-                if (roles.Contains("User"))
-                {
-                    filteredList.Add(user);
-                }
-            }
-
-            var users = UserFactory.Create(filteredList);
             if (users != null && users.Count > 0)
             {
                 return ResponseFactory.Ok(users);
-
             }
 
             return ResponseFactory.NotFound("No users available");
