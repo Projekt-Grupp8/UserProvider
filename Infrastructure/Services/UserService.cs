@@ -151,6 +151,12 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
                 return ResponseFactory.NotFound($"No user with email: {model.Email} exists.");
             }
 
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.Contains("SuperUser") || roles.Contains("Admin"))
+            {
+                return ResponseFactory.Unauthorized("You do not have permission to update this user");
+            }
+
             // Mappar om UpdateAdmin till en ApplicationUser (entitet). 
             var updateUser = UserFactory.Update(user, model);
 

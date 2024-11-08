@@ -54,7 +54,7 @@ public class AdminCrudService
 
             return result is null
                 ? ResponseFactory.NotFound(email)
-                : ResponseFactory.Ok( new {result = AdminFactory.Create(result)});
+                : ResponseFactory.Ok(new { result = AdminFactory.Create(result) });
 
         }
         catch (Exception ex)
@@ -89,8 +89,8 @@ public class AdminCrudService
                 adminModels.Add(AdminFactory.Create(admin, roles));
             }
 
-            return adminModels.Count > 0 
-                ? ResponseFactory.Ok(adminModels) 
+            return adminModels.Count > 0
+                ? ResponseFactory.Ok(adminModels)
                 : ResponseFactory.NotFound();
         }
         catch (Exception ex)
@@ -139,13 +139,19 @@ public class AdminCrudService
         try
         {
             var admin = await _userManager.FindByEmailAsync(email);
-            if (admin is not null)
+            if (admin is null)
             {
-                await _userManager.DeleteAsync(admin);
-                return true;
+                return false;
             }
 
-            return false;
+            var roles = await _userManager.GetRolesAsync(admin);
+            if (roles.Contains("SuperAdmin"))
+            {
+                return false;
+            }
+
+            await _userManager.DeleteAsync(admin);
+            return true;
         }
         catch (Exception ex)
         {

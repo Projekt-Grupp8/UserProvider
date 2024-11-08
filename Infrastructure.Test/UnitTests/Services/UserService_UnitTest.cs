@@ -243,12 +243,8 @@ public class UserService_UnitTest : IDisposable
         await _context.Users.AddRangeAsync(userList);
         await _context.SaveChangesAsync();
 
-        _mockUserManager.Setup(x => x.Users).Returns(_context.Users.AsQueryable());
-
-        foreach (var user in userList)
-        {
-            _mockUserManager.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(new List<string> { "User" });
-        }
+        _mockUserManager.Setup(x => x.GetUsersInRoleAsync("User"))
+                        .ReturnsAsync(userList);
 
         // Act
         var result = await _userService.GetAllUsersAsync();
@@ -277,12 +273,9 @@ public class UserService_UnitTest : IDisposable
         await _context.SaveChangesAsync();
 
         // Mockar att UserManager returernar den tomma listan från databasen
-        _mockUserManager.Setup(x => x.Users).Returns(_context.Users.AsQueryable());
+        _mockUserManager.Setup(x => x.GetUsersInRoleAsync("User"))
+                        .ReturnsAsync(userList);
 
-        foreach (var user in userList)
-        {
-            _mockUserManager.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(new List<string> { "User" });
-        }
 
         // Act
         var result = await _userService.GetAllUsersAsync();

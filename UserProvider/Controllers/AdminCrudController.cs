@@ -107,7 +107,7 @@ public partial class AdminCrudController : ControllerBase
                 return NoContent();
             }
 
-            return NotFound();
+            return Unauthorized(new { status = "error", message = "You do not have permission to delete this user." });
         }
         catch (Exception ex)
         {

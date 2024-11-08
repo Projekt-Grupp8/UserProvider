@@ -60,12 +60,13 @@ public partial class UserController : ControllerBase
         }
 
         var response = await _userService.UpdateUserAsync(model);
-        if (response.ContentResult is not null)
+        return response.StatusCode switch
         {
-            return Ok(response.ContentResult);
-        }
-
-        return NotFound($"Couldn't find user with email: {model.Email}");
+            ResponseStatusCode.OK => Ok(response.ContentResult),
+            ResponseStatusCode.UNAUTHORIZED => Unauthorized(new { status = "error", message = "You do not have permission to update this user." }),
+            ResponseStatusCode.NOT_FOUND => NotFound(new { status = "error", message = $"Couldn't find user with email: {model.Email}" }),
+            _ => StatusCode(500, new { status = "error", message = "An unexpected error occurred. Please try again later." })
+        };
     }
 
     [HttpDelete]
@@ -82,7 +83,7 @@ public partial class UserController : ControllerBase
         {
             return NoContent();
         }
-        return NotFound($"No user with email: {email}");
+        return Unauthorized(new { status = "error", message = "You do not have permission to delete this user." });
     }
 
     [GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$")]
