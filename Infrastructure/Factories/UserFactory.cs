@@ -30,12 +30,20 @@ public class UserFactory
 
     public static List<User> Create(IEnumerable<ApplicationUser> users)
     {
-        return users?.Select(user => new User
+        if (users == null || !users.Any())
         {
-            Email = user.Email,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-        }).ToList() ?? new List<User>();
+            return [];
+        }
+
+        return users
+            .Where(user => !string.IsNullOrEmpty(user.Email)) 
+            .Select(user => new User
+            {
+                Email = user.Email!,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+            })
+            .ToList();
     }
 
     public static List<User> Create(List<ApplicationUser> userList)
