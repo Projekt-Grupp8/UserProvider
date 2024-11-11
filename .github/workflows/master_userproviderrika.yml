@@ -28,7 +28,7 @@ jobs:
         run: dotnet build ./UserProvider/UserProvider.csproj --configuration Release
 
       - name: Run tests
-        run: dotnet test ./Infrastructure.Test.csproj --configuration Release
+        run: dotnet test ./UserProvider/Infrastructure.Test.csproj --configuration Release
 
       - name: dotnet publish
         run: dotnet publish ./UserProvider/UserProvider.csproj -c Release -o ${{ github.workspace }}/UserProvider
