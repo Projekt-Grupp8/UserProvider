@@ -42,7 +42,7 @@ public partial class UserController : ControllerBase
     public async Task<IActionResult> GetAllUsers()
     {
         var response = await _userService.GetAllUsersAsync();
-        if (response.StatusCode == Infrastructure.Models.StatusCode.OK)
+        if (response.StatusCode == ResponseStatusCode.OK)
         {
             return Ok(response.ContentResult);
         }

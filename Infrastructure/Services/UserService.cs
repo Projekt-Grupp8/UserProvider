@@ -152,7 +152,7 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
             }
 
             // Kontrollerar om användaren är SuperUser eller Admin, returnerar Unauthorized. 
-            var roles = await _userManager.GetRolesAsync(user);
+            var roles = await _userManager.GetRolesAsync(user) ?? [];
             if (roles.Contains("SuperUser") || roles.Contains("Admin"))
             {
                 return ResponseFactory.Unauthorized("You do not have permission to update this user");
@@ -177,7 +177,7 @@ public class UserService(UserManager<ApplicationUser> userManager, DataContext c
         catch (Exception ex)
         {
             _logger.LogError("<UserService> UpdateUserAsync catched an error: {Exception}", ex.Message);
-            return null!;
+            return ResponseFactory.InternalError("An error occurred while updating the user");
         }
     }
 
