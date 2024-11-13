@@ -1,6 +1,10 @@
-@UserProvider_HostAddress = http://localhost:5205
+@UserProvider_HostAddress = https://localhost:7239
 
 GET {{UserProvider_HostAddress}}/weatherforecast/
 Accept: application/json
+
+###
+
+GET {{UserProvider_HostAddress}}/getusers
 
 ###

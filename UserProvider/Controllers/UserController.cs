@@ -1,6 +1,4 @@
-﻿using Azure;
-using Infrastructure.Factories;
-using Infrastructure.Models;
+﻿using Infrastructure.Models;
 using Infrastructure.Services;
 using ResponseStatusCode = Infrastructure.Models.StatusCode;
 using Microsoft.AspNetCore.Mvc;
